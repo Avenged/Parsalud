@@ -1,0 +1,22 @@
+﻿<article class="info-card-large">
+    <div class="info-card-large__body">
+        <div class="info-card-large__content">
+            <p class="info-card-large__subtitle">@Subtitle</p>
+            <h3 class="info-card-large__title">@Title</h3>
+            <p class="info-card-large__description">@Description</p>
+        </div>
+        <ParsaludButton Text="Saber más" />
+    </div>
+    <div class="info-card-large__background"></div>
+</article>
+
+@code {
+    [Parameter]
+    public string? Subtitle { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Description { get; set; }
+}

@@ -1,0 +1,16 @@
+﻿.why-parsalud {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+    max-width: 30rem;
+}
+
+    .why-parsalud > * {
+        margin: 0;
+        text-wrap: pretty;
+    }
+
+    .why-parsalud > h2 {
+        font-weight: 600;
+    }

@@ -1,0 +1,31 @@
+﻿<article class="info-card">
+    <div class="info-card__header">
+        <img src=@ImgSrc />
+        <img decoration src=@($"./images/img_dec_{Decoration}.svg") />
+    </div>
+    <div class="info-card__body">
+        <p class="info-card__subtitle">@Subtitle</p>
+        <h4 class="info-card__title">@Title</h4>
+        <NavLink class="more-link" href=@Link>
+            Saber más
+            <img class="more-link" src="east.svg" alt="Navegar" height="24" width="24">
+        </NavLink>
+    </div>
+</article>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Subtitle { get; set; }
+
+    [Parameter]
+    public string? Link { get; set; }
+
+    [Parameter]
+    public string? ImgSrc { get; set; }
+
+    [Parameter]
+    public int Decoration { get; set; } = 1;
+}

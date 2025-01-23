@@ -1,0 +1,23 @@
+﻿ul.statistics {
+    list-style: none;
+}
+
+    ul.statistics > li:first-of-type {
+        border-top: 1px solid #E6E6E6;
+    }
+
+    ul.statistics > li {
+        color: #48086F;
+        font-weight: bold;
+        font-size: 3rem;
+        margin: 0;
+        border-bottom: 1px solid #E6E6E6;
+    }
+
+        ul.statistics > li > p {
+            font-weight: 600;
+            color: #2F2C31; 
+            font-size: 1rem;
+            display: block;
+            white-space: nowrap;
+        }
