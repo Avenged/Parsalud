@@ -1,5 +1,6 @@
 ﻿ul.statistics {
     list-style: none;
+    padding: 0;
 }
 
     ul.statistics > li:first-of-type {

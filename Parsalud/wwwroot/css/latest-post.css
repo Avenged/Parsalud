@@ -1,0 +1,74 @@
+﻿.latest-post {
+    width: 15rem;
+    overflow: hidden;
+}
+
+    .latest-post >
+    .latest-post__image {
+        height: 9.375rem;
+        object-fit: cover;
+        aspect-ratio: 16/10;
+    }
+
+    .latest-post >
+    .latest-post__body > * {
+        margin: 0;
+        text-wrap: pretty;
+    }
+
+    .latest-post >
+    .latest-post__body {
+        padding: 1.5rem 1.5rem 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background-color: #fff;
+    }
+
+        .latest-post >
+        .latest-post__body >
+        .latest-post__description {
+            font-size: 0.75rem;
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+        }
+
+        .latest-post >
+        .latest-post__body >
+        .latest-post__category {
+            letter-spacing: 0.1rem;
+            line-height: 24px;
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #2F2C31;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .latest-post >
+        .latest-post__body >
+        .latest-post__title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    .latest-post >
+    .latest-post__footer {
+        background-color: #fff;
+        position: relative;
+        height: 2rem;
+    }
+
+        .latest-post >
+        .latest-post__footer > svg {
+            top: 0;
+            width: 1rem;
+            position: absolute;
+            align-self: flex-end;
+            right: .75rem;
+        }

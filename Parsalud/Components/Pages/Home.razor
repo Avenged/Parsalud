@@ -2,21 +2,24 @@
 
 <PageTitle>Inicio - Parsalud</PageTitle>
 
+
 <div class="carousel"></div>
 
-<div class="container">
-    <div class="info-card-container py-15">
-        <InfoCard Subtitle="Servicios" Title="Planes de Salud" ImgSrc="./images/planes_de_salud.jpeg" Decoration="1" />
-        <InfoCard Subtitle="Servicios" Title="Planes para cubrir Accidentes Laborales" ImgSrc="./images/planes_accidentes_laborales.png" Decoration="2" />
-        <InfoCard Subtitle="Servicios" Title="Planes Funerarios" ImgSrc="./images/planes_funerarios.jpeg" Decoration="3" />
-    </div>
+<div class="info-card-container py-10 px-common">
+    <InfoCard Subtitle="Servicios" Title="Planes de Salud" ImgSrc="./images/planes_de_salud.jpeg" Decoration="1" />
+    <InfoCard Subtitle="Servicios" Title="Planes para cubrir Accidentes Laborales" ImgSrc="./images/planes_accidentes_laborales.png" Decoration="2" />
+    <InfoCard Subtitle="Servicios" Title="Planes Funerarios" ImgSrc="./images/planes_funerarios.jpeg" Decoration="3" />
+</div>
 
+<div class="px-common">
     <InfoCardLarge Subtitle="Herramientas en línea: ATA (Atención total al afiliado)"
                    Title="Portal para Afiliados: Consulta tu plan de salud"
                    Description="Las herramientas en línea de Parsalud están dirigidas a empresas, afiliados y proveedores del sector salud. Permiten a las empresas gestionar sus planes de salud, a los afiliados consultar su información y realizar autogestión, a los proveedores acceder a datos de pagos y casos de manera eficiente." />
-
-    <div class="d-flex justify-content-between gap-5 py-10 flex-wrap">
-        <WhyParsalud />
-        <Statistics />
-   </div>
 </div>
+
+<div class="d-flex justify-content-between gap-5 py-10 flex-wrap px-common">
+    <WhyParsalud />
+    <Statistics />
+</div>
+
+<LatestPostsSection />

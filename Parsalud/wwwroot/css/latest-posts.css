@@ -1,0 +1,18 @@
+﻿.latest-posts {
+    display: flex;
+    flex-direction: column;
+    background-color: #48086F;
+    gap: 2rem;
+    padding: var(--px-common);
+}
+
+    .latest-posts__title {
+        color: #fff;
+    }
+
+    .latest-posts__posts {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }

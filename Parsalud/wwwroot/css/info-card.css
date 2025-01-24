@@ -1,5 +1,9 @@
-﻿.info-card {
-    width: 24rem;
+﻿:root {
+    --info-card-width: 20.833rem;
+}
+
+.info-card {
+    width: var(--info-card-width);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -29,9 +33,9 @@
     }
 
     .info-card__header > img:not([decoration]) {
+        width: var(--info-card-width);
         top: 0;
         aspect-ratio: 4 / 3;
-        height: 17.188rem;
         position: relative;
         left: 17.2px;
         margin-bottom: 17.3px;

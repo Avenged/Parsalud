@@ -3,8 +3,12 @@
 @import url('css/why-parsalud.css');
 @import url('css/parsalud-button.css');
 @import url('css/statistics.css');
+@import url('css/latest-posts.css');
+@import url('css/latest-post.css');
+@import url('css/footer.css');
 
 :root {
+    --px-common: 5rem;
     --nav-link-normal-color: #2F2C31;
     --nav-link-active-color: #9E0085;
     --bs-font-sans-serif: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -12,6 +16,7 @@
 
 html, body {
     font-family: var(--bs-font-sans-serif);
+    scrollbar-gutter: stable;
 }
 
 a, .btn-link {
@@ -175,6 +180,20 @@ main {
 .py-15 {
     padding-top: 8rem;
     padding-bottom: 8rem;
+}
+
+.pt-15 {
+    padding-top: 8rem;
+}
+
+.px-9 {
+    padding-left: 5rem;
+    padding-right: 5rem;
+}
+
+.px-common {
+    padding-left: var(--px-common);
+    padding-right: var(--px-common);
 }
 
 @media (max-width: 640.98px) {
