@@ -196,14 +196,31 @@ main {
     padding-right: var(--px-common);
 }
 
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
+@media (max-width: 1260px) {
+
+    .top-row > img {
+        height: 50px;
     }
 
-        .top-row ::deep a, .top-row ::deep .btn-link {
-            margin-left: 0;
+    .top-row {
+        justify-content: space-between;
+        padding: 0rem 1.5rem;
+        height: 3.5rem;
+    }
+
+        .top-row > nav {
+            display: none;
         }
+}
+
+@media (max-width: 640.98px) {
+    :root {
+        --px-common: 1rem;
+    }
+
+    .top-row ::deep a, .top-row ::deep .btn-link {
+        margin-left: 0;
+    }
 }
 
 @media (min-width: 641px) {

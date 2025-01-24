@@ -18,6 +18,22 @@
 
 <body>
     <Routes />
+    <script type="text/javascript">
+        function handleScreenSizeChange(event) {
+            const div = document.querySelector('#container');
+
+            if (event.matches) {
+                div.classList.remove('container-xxl');
+            } else {
+                div.classList.add('container-xxl');
+            }
+        }
+
+        const mediaQuery = window.matchMedia('(max-width: 1260px)');
+
+        handleScreenSizeChange(mediaQuery);
+        mediaQuery.addEventListener('change', handleScreenSizeChange);
+    </script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 
