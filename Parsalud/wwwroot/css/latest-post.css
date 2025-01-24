@@ -1,11 +1,10 @@
 ﻿.latest-post {
-    width: 15rem;
     overflow: hidden;
 }
 
     .latest-post >
     .latest-post__image {
-        height: 9.375rem;
+        width: 100%;
         object-fit: cover;
         aspect-ratio: 16/10;
     }
@@ -31,7 +30,7 @@
             font-size: 0.75rem;
             display: -webkit-box;
             overflow: hidden;
-            -webkit-line-clamp: 6;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
         }
 

@@ -10,9 +10,10 @@
         color: #fff;
     }
 
-    .latest-posts__posts {
-        display: flex;
-        gap: 1rem;
-        justify-content: space-between;
-        flex-wrap: wrap;
-    }
+.latest-posts__posts {
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    grid-auto-flow: dense;
+    gap: 1rem;
+}
