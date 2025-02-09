@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Parsalud.Client.Layout
+@using Radzen.Blazor
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -13,27 +16,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    @if (isDashboard)
+    {
+        <HeadOutlet @rendermode="RenderModeForPage" />
+    }
+    else
+    {
+        <HeadOutlet />
+    }
 </head>
 
 <body>
-    <Routes />
-    <script type="text/javascript">
-        function handleScreenSizeChange(event) {
-            const div = document.querySelector('#container');
+    @if (isDashboard)
+    {
+        <RadzenTheme Theme="material" @rendermode="RenderModeForPage" />
+        <DashboardRoutes @rendermode="RenderModeForPage" />
+        <div id="preload">
+            <svg class="loading-progress">
+                <circle r="40%" cx="50%" cy="50%" />
+                <circle r="40%" cx="50%" cy="50%" />
+            </svg>
+            <div class="loading-progress-text"></div>
+        </div>
+    }
+    else
+    {
+        <Routes />
+    }
 
-            if (event.matches) {
-                div.classList.remove('container-xxl');
-            } else {
-                div.classList.add('container-xxl');
+    @if (isDashboard)
+    {
+        <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
+    }
+    else
+    {
+        <script type="text/javascript">
+            function handleScreenSizeChange(event) {
+                const div = document.querySelector('#container');
+
+                if (event.matches) {
+                    div.classList.remove('container-xxl');
+                } else {
+                    div.classList.add('container-xxl');
+                }
             }
-        }
 
-        const mediaQuery = window.matchMedia('(max-width: 1260px)');
+            const mediaQuery = window.matchMedia('(max-width: 1260px)');
 
-        handleScreenSizeChange(mediaQuery);
-        mediaQuery.addEventListener('change', handleScreenSizeChange);
-    </script>
+            handleScreenSizeChange(mediaQuery);
+            mediaQuery.addEventListener('change', handleScreenSizeChange);
+        </script>
+    }
+
+    <script src="@Assets["lib/bootstrap/dist/js/bootstrap.min.js"]"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 

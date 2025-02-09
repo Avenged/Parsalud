@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="VENative.Blazor.ServiceGenerator" OutputItemType="Analyzer" ReferenceOutputAssembly="false">
+			<HintPath>..\Lib\VENative.Blazor.ServiceGenerator.dll</HintPath>
+		</Reference>
+		<Reference Include="VENative.Blazor.ServiceGenerator.Attributes">
+			<HintPath>..\Lib\VENative.Blazor.ServiceGenerator.Attributes.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<PropertyGroup>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\Generated</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
+
+</Project>

@@ -1,11 +1,21 @@
-using Parsalud.Client.Pages;
 using Parsalud.Components;
+using Radzen;
+using Parsalud.Extensions;
+using Parsalud.BusinessLayer;
+using VENative.Blazor.ServiceGenerator.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddRadzenComponents();
+builder.Services.AddBusinessLayer(builder.Configuration);
+builder.Services.AddSecurity();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
+    .AddInteractiveServerComponents(c =>
+    {
+        c.DetailedErrors = builder.Environment.IsDevelopment();
+    })
     .AddInteractiveWebAssemblyComponents();
 
 var app = builder.Build();
@@ -24,13 +34,13 @@ else
 
 app.UseHttpsRedirection();
 
-
 app.UseAntiforgery();
 
+app.MapGeneratedHubs(useAuthorization: true, typeof(App).Assembly);
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Parsalud.Client._Imports).Assembly);
 
-app.Run();
+await app.RunAsync();

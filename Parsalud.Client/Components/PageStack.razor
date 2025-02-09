@@ -1,0 +1,26 @@
+﻿@using Microsoft.Extensions.Logging
+@using System.Reflection
+
+@implements IDisposable
+
+@inject NavigationManager NM
+@inject IJSRuntime JS
+@inject TooltipService TS
+
+<CascadingValue Value="this" IsFixed="true">
+    @{
+        var i = pages.Count;
+    }
+    @foreach (var pagei in pages)
+    {
+        <stack-page @key=@pagei.Id
+                    id=@pagei.Id
+                    style=@($"z-index:{i--}")
+                    class="rz-body animate__animated animate__fadeInUp animate__slower">
+            @Renderer(pagei)
+        </stack-page>
+    }
+    <stack-page @key=@MainId id=@MainId class="rz-body" style="z-index:0">
+        @ChildContent
+    </stack-page>
+</CascadingValue>
