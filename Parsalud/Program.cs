@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRadzenComponents();
 builder.Services.AddBusinessLayer(builder.Configuration);
 builder.Services.AddSecurity();
+builder.Services.AddHttpContextAccessor();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

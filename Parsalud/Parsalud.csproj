@@ -7,6 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator.Extensions\VENative.Blazor.ServiceGenerator.Extensions.csproj" />
 		<ProjectReference Include="..\Parsalud.BusinessLayer\Parsalud.BusinessLayer.csproj" />
 		<ProjectReference Include="..\Parsalud.Client\Parsalud.Client.csproj" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.1" />
@@ -15,12 +16,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="VENative.Blazor.ServiceGenerator.Extensions">
-			<HintPath>..\Lib\VENative.Blazor.ServiceGenerator.Extensions.dll</HintPath>
-		</Reference>
 	</ItemGroup>
 
 </Project>

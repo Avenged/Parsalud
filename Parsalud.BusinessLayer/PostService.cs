@@ -7,9 +7,11 @@ using VENative.Blazor.ServiceGenerator.Attributes;
 namespace Parsalud.BusinessLayer;
 
 [GenerateHub]
-public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory) : IPostService
+public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
+    IUserService userService) : IPostService
 {
     private readonly IDbContextFactory<ParsaludDbContext> dbContextFactory = dbContextFactory;
+    private readonly IUserService userService = userService;
 
     public async Task<BusinessResponse> CreateAsync(ManagePostRequest request, CancellationToken cancellationToken = default)
     {
@@ -24,6 +26,8 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory) 
                 Content = request.Content,
                 Hidden = request.Hidden,
                 PostCategoryId = request.PostCategoryId,
+                CreatedAt = DateTime.Now,
+                CreatedById = userService.Id,
             });
 
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -73,6 +77,35 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory) 
         catch
         {
             return BusinessResponse.Error<ParsaludPost>("Ocurrió un error inesperado");
+        }
+    }
+
+    public async Task<BusinessResponse<ParsaludPost[]>> GetByCriteriaAsync(PostSearchCriteria criteria, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            var query = dbContext.Posts.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(criteria.Title))
+                query = query.Where(x => EF.Functions.Like(x.Title, $"%{criteria.Title}%"));
+
+            var entity = await query.Select(x => new ParsaludPost
+            {
+                Id = x.Id,
+                Content = x.Content,
+                Title = x.Title,
+                Hidden = x.Hidden,
+                PostCategoryId = x.PostCategoryId,
+                CreatedAt = x.CreatedAt,
+                UpdatedAt = x.UpdatedAt,
+            }).ToArrayAsync(cancellationToken);
+
+            return BusinessResponse.Success(entity);
+        }
+        catch
+        {
+            return BusinessResponse.Error<ParsaludPost[]>("Ocurrió un error inesperado");
         }
     }
 }

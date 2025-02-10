@@ -7,22 +7,21 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.1" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator.Attributes\VENative.Blazor.ServiceGenerator.Attributes.csproj" />
+		<ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator\VENative.Blazor.ServiceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\Parsalud.BusinessLayer.Abstractions\Parsalud.BusinessLayer.Abstractions.csproj" />
 		<ProjectReference Include="..\Parsalud.DataAccess\Parsalud.DataAccess.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="VENative.Blazor.ServiceGenerator" OutputItemType="Analyzer" ReferenceOutputAssembly="false">
-			<HintPath>..\Lib\VENative.Blazor.ServiceGenerator.dll</HintPath>
-		</Reference>
-		<Reference Include="VENative.Blazor.ServiceGenerator.Attributes">
-			<HintPath>..\Lib\VENative.Blazor.ServiceGenerator.Attributes.dll</HintPath>
-		</Reference>
+		<ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator\VENative.Blazor.ServiceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<PropertyGroup>

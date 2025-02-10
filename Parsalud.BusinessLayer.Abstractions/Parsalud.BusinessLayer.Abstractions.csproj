@@ -7,12 +7,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Reference Include="VENative.Blazor.ServiceGenerator" OutputItemType="Analyzer" ReferenceOutputAssembly="false">
-			<HintPath>..\Lib\VENative.Blazor.ServiceGenerator.dll</HintPath>
-		</Reference>
-		<Reference Include="VENative.Blazor.ServiceGenerator.Attributes">
-			<HintPath>..\Lib\VENative.Blazor.ServiceGenerator.Attributes.dll</HintPath>
-		</Reference>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator.Attributes\VENative.Blazor.ServiceGenerator.Attributes.csproj" />
+	  <ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator\VENative.Blazor.ServiceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<PropertyGroup>

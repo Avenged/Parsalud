@@ -4,6 +4,32 @@
 
 @inject IPostService PostService
 
-@code {
+@inherits BaseAbm<Guid>
 
-}
+<PageTitle>@Action("Nuevo", "Editar", "Ver") artículo - Dashboard Parsalud</PageTitle>
+<RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1">@Action("Nuevo", "Editar", "Ver") artículo</RadzenText>
+
+<RadzenCard>
+    <RadzenTemplateForm TItem="PostModel" Data="Model">
+        <RadzenStack>
+            <RadzenRow>
+                <RadzenColumn SizeMD="6">
+                    <RadzenFormField class="rz-w-100" Text="Título">
+                        <RadzenTextBox Name=@nameof(Model.Title) @bind-Value=@Model.Title />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component=@nameof(Model.Title) Text="Título es requerido" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn SizeMD="12">
+                    <RadzenHtmlEditor Name=@nameof(Model.Content) @bind-Value=@Model.Content />
+                    <RadzenRequiredValidator Component=@nameof(Model.Content) Text="El contenido del artículo no debe estar vacío" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
+                <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text="Descartar" Icon="keyboard_return" Click="Discard" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenCard>

@@ -1,6 +1,53 @@
 ﻿@page "/Dashboard/Posts"
 @inject IPostService PostService
+@inject NavigationManager NM
 
-@code {
+<PageTitle>Artículos - Dashboard Parsalud</PageTitle>
+<RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1">Administrar artículos</RadzenText>
 
-}
+<RadzenStack>
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H5">Buscar artículos</RadzenText>
+        <RadzenTemplateForm TItem="ManagePosts" Data="this" Submit="Submit">
+            <RadzenStack>
+                <RadzenRow>
+                    <RadzenColumn SizeMD="4">
+                        <RadzenFormField class="rz-w-100" Text="Título">
+                            <RadzenTextBox @bind-Value=@Criteria.Title />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
+                    <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text="Limpiar" Icon="refresh" />
+                    <RadzenButton class="rz-w-fit-content" Variant="Variant.Outlined" Text="Nuevo artículo" Icon="add" Click="CreateNew" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenTemplateForm>
+    </RadzenCard>
+
+    @if (Posts is not null)
+    {
+        <RadzenCard>
+            @if (Posts.Length > 0)
+            {
+                <RadzenDataList TItem="ParsaludPost" Data="Posts">
+                    <Template>
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                            <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H3">@context.Title</RadzenText>
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="delete" />
+                            </RadzenStack>
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataList>
+            }
+            else
+            {
+                <RadzenText>No se encontraron resultados</RadzenText>
+            }
+        </RadzenCard>
+    }
+</RadzenStack>

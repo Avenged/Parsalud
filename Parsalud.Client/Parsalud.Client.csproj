@@ -17,13 +17,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Parsalud.BusinessLayer.Abstractions\Parsalud.BusinessLayer.Abstractions.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="VENative.Blazor.ServiceGenerator.Extensions.BlazorWebAssembly">
-			<HintPath>..\Lib\VENative.Blazor.ServiceGenerator.Extensions.BlazorWebAssembly.dll</HintPath>
-		</Reference>
+	  <ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator.Extensions.BlazorWebAssembly\VENative.Blazor.ServiceGenerator.Extensions.BlazorWebAssembly.csproj" />
+	  <ProjectReference Include="..\Parsalud.BusinessLayer.Abstractions\Parsalud.BusinessLayer.Abstractions.csproj" />
 	</ItemGroup>
 
 </Project>

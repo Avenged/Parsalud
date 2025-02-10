@@ -6,57 +6,19 @@ using System.Web;
 
 namespace Parsalud.Client.Components;
 
-public abstract class BaseAbm<Tkey, TModel> : BaseAbm, IDisposable
-    where TModel : class
+public abstract class BaseAbm<Tkey> : BaseAbm, IDisposable
 {
-    protected override sealed async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-
-        // Ensures the user has the required role to make changes in the ABM
-        TaskCompletionSource tcs = new();
-        var state = await AuthenticationStateTask;
-
-        var editRoleSpecified = !string.IsNullOrWhiteSpace(EditRole);
-        var hasRequiredRole = state.User.IsInRole(EditRole ?? "");
-        var isEditAction = AbmAction != AbmAction.View;
-
-        if (editRoleSpecified && !hasRequiredRole && isEditAction)
-        {
-            var encodedUrl = HttpUtility.UrlEncode(NM.Uri);
-            NM.NavigateTo($"Unauthorized/{encodedUrl}", replace: true);
-            await tcs.Task;
-        }
-
-        await OnParametersSetAsyncImpl();
-    }
-
-    protected abstract Task OnParametersSetAsyncImpl();
-
-    protected BaseAbm(string resource, string singularResourceName, string? editRole = default) : base(resource, singularResourceName, editRole)
-    {
-    }
-
     [Parameter]
     public Tkey? Id { get; set; }
 
-    protected TModel? Model { get; set; }
-
-#pragma warning disable CS0649
-    private DotNetObjectReference<BaseAbm<Tkey, TModel>>? reference;
-#pragma warning restore CS0649
-
     public virtual void Dispose()
     {
-        reference?.Dispose();
         GC.SuppressFinalize(this);
     }
 }
 
-public abstract class BaseAbm(string resource, string singularResourceName, string? editRole = default) : ComponentBase
+public abstract class BaseAbm() : ComponentBase
 {
-    protected readonly string? EditRole = editRole;
-    protected readonly string Resource = resource;
     protected bool ReadOnly { get; set; }
     protected bool IsBusy { get; set; }
     protected bool NotFound { get; set; }
@@ -85,9 +47,6 @@ public abstract class BaseAbm(string resource, string singularResourceName, stri
 
     [Parameter]
     public AbmAction AbmAction { get; set; }
-
-    [Parameter]
-    public string SingularResourceName { get; set; } = singularResourceName;
 
     /// <summary>
     /// Indica si se debe mostrar el breadcrumb.
@@ -132,7 +91,7 @@ public abstract class BaseAbm(string resource, string singularResourceName, stri
         }
         else if (OpenMode == OpenMode.Navigation)
         {
-            NM.NavigateTo(Resource);
+            //NM.NavigateTo(Resource);
         }
     }
 
@@ -152,7 +111,7 @@ public abstract class BaseAbm(string resource, string singularResourceName, stri
         }
         else if (OpenMode == OpenMode.Navigation)
         {
-            NM.NavigateTo(Resource);
+            //NM.NavigateTo(Resource);
         }
     }
 
@@ -181,5 +140,21 @@ public abstract class BaseAbm(string resource, string singularResourceName, stri
     protected override void OnParametersSet()
     {
         VerifyAction();
+    }
+
+    protected string? Action(string? create = default, string? update = default, string? view = default)
+    {
+        switch (AbmAction)
+        {
+            case AbmAction.Create:
+                return create;
+            case AbmAction.Update:
+                return update;
+            case AbmAction.View:
+                return view;
+            default:
+                break;
+        }
+        return null;
     }
 }

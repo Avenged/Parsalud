@@ -15,6 +15,7 @@ public static class Installer
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
 
+        services.AddTransient<IUserService, UserService>();
         services.AddTransient<IPostService, PostService>();
     }
 }

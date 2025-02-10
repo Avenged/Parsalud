@@ -1,0 +1,211 @@
+﻿@inject TooltipService TS
+@inject ContextMenuService CMS
+@inject IJSRuntime JS
+
+@implements IDisposable
+
+@if (Visible)
+{
+    @if (!string.IsNullOrWhiteSpace(Link) && !Click.HasDelegate)
+    {
+        <NavLink href=@Link>
+            <RadzenButton Text="@Text"
+                          Variant="@Variant"
+                          Icon="@Icon"
+                          IsBusy="@IsBusy"
+                          BusyText="@BusyText"
+                          ButtonType="@ButtonType"
+                          ButtonStyle="ButtonStyle"
+                          Visible="@Visible"
+                          Style="@Style"
+                          class="@Class"
+                          Size="Size"
+                          MouseEnter="@(args => ShowTooltip(args))"
+                          MouseLeave="@(args => HideTooltip(args))"
+                          Disabled="@Disabled" />
+        </NavLink>
+    }
+    else
+    {
+        <RadzenButton Text="@Text"
+                      @onmousedown="@InternalClick"
+                      Variant="@Variant"
+                      Icon="@Icon"
+                      IsBusy="@IsBusy"
+                      ContextMenu=@ShowContextMenuWithItems
+                      BusyText="@BusyText"
+                      ButtonType="@ButtonType"
+                      ButtonStyle="ButtonStyle"
+                      Visible="@Visible"
+                      Style="@Style"
+                      class="@Class"
+                      Size="Size"
+                      MouseEnter="@(args => ShowTooltip(args))"
+                      MouseLeave="@(args => HideTooltip(args))"
+                      Disabled="@Disabled" />
+    }
+}
+
+@code {
+    [Parameter]
+    public string? Link { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> Click { get; set; }
+
+    [Parameter]
+    public string? BusyText { get; set; }
+
+    [Parameter]
+    public ButtonSize Size { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public ButtonStyle ButtonStyle { get; set; }
+
+    [Parameter]
+    public ButtonType ButtonType { get; set; }
+
+    [Parameter]
+    public string? Icon { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool IsBusy { get; set; }
+
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public Variant Variant { get; set; }
+
+    [Parameter]
+    public string? TooltipText { get; set; }
+
+    [Parameter]
+    public int? TooltipDelay { get; set; }
+
+    [Parameter]
+    public int? TooltipDuration { get; set; } = int.MaxValue;
+
+    [Parameter]
+    public RenderFragment? TooltipContent { get; set; }
+
+    [Parameter]
+    public TooltipPosition TooltipPosition { get; set; } = TooltipPosition.Top;
+
+    [Parameter]
+    public bool CloseTooltipOnDocumentClick { get; set; } = true;
+
+    [Parameter]
+    public string? TooltipStyle { get; set; }
+
+    [Parameter]
+    public string? TooltipCssClass { get; set; }
+
+    [Parameter]
+    public bool HideTooltipOnMouseLeave { get; set; } = true;
+
+    [Inject]
+    public NavigationManager NM { get; set; } = null!;
+
+    async Task InternalClick(MouseEventArgs args)
+    {
+        if (args.Button == 0)
+        {
+            await Click.InvokeAsync(args);
+        }
+        else if (!string.IsNullOrWhiteSpace(Link) && args.Button == 1)
+        {
+            await JS.InvokeVoidAsync("window.open", Link, "_blank");
+        }
+    }
+
+    void ShowContextMenuWithItems(MouseEventArgs args)
+    {
+        if (string.IsNullOrWhiteSpace(Link)) return;
+
+        CMS.Open(
+            args, 
+            [
+                new ContextMenuItem() { Text = "Abrir vínculo en una nueva pestaña", Value = 1, Icon = "tab" },
+                new ContextMenuItem() { Text = "Copiar vínculo", Value = 2, Icon = "link" }
+            ],
+            OnMenuItemClick);
+    }
+
+    async void OnMenuItemClick(MenuItemEventArgs args)
+    {
+        if (string.IsNullOrWhiteSpace(Link)) return;
+
+        try
+        {
+            if (args.Value.Equals(1))
+            {
+                await JS.InvokeVoidAsync("window.open", Link, "_blank");
+            }
+            else if (args.Value.Equals(2))
+            {
+                var link = NM.ToAbsoluteUri(Link);
+                await JS.InvokeVoidAsync("navigator.clipboard.writeText", link.ToString());
+            }
+        }
+        catch (Exception)
+        {
+        }
+
+        CMS.Close();
+    }
+
+    private void ShowTooltip(ElementReference elementReference)
+    {
+        if (!string.IsNullOrWhiteSpace(TooltipText))
+        {
+            try
+            {
+                TS.Open(elementReference, TooltipText, new TooltipOptions
+                {
+                    Position = TooltipPosition,
+                    Delay = TooltipDelay,
+                    Duration = TooltipDuration,
+                    CloseTooltipOnDocumentClick = CloseTooltipOnDocumentClick,
+                    Style = TooltipStyle,
+                    CssClass = TooltipCssClass,
+                    Text = TooltipText,
+                });
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    private void HideTooltip(ElementReference elementReference)
+    {
+        @if (HideTooltipOnMouseLeave)
+        {
+            try
+            {
+                TS.Close();
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        TS?.Close();
+    }
+}
