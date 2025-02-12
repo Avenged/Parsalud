@@ -15,6 +15,7 @@ public static class Installer
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
 
+        services.AddTransient<IStyleSheetService, StyleSheetService>();
         services.AddTransient<ISectionService, SectionService>();
         services.AddTransient<IFaqService, FaqService>();
         services.AddTransient<IUserService, UserService>();

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Parsalud.DataAccess;
 
@@ -11,9 +12,11 @@ using Parsalud.DataAccess;
 namespace Parsalud.DataAccess.Migrations
 {
     [DbContext(typeof(ParsaludDbContext))]
-    partial class ParsaludDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250212141635_StyleSheets")]
+    partial class StyleSheets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

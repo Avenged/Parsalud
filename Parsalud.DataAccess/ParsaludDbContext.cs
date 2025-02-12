@@ -10,6 +10,7 @@ public class ParsaludDbContext(DbContextOptions<ParsaludDbContext> options) : Id
     public DbSet<Section> Sections { get; set; } = null!;
     public DbSet<Faq> Faqs { get; set; } = null!;
     public DbSet<Post> Posts { get; set; } = null!;
+    public DbSet<StyleSheet> StyleSheets { get; set; } = null!;
     public DbSet<PostCategory> PostCategories { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -46,6 +47,12 @@ public class ParsaludDbContext(DbContextOptions<ParsaludDbContext> options) : Id
         builder.Entity<Section>(x =>
         {
             x.HasIndex(x => x.Code)
+                .IsUnique(unique: true);
+        });
+
+        builder.Entity<StyleSheet>(x =>
+        {
+            x.HasIndex(x => x.FileName)
                 .IsUnique(unique: true);
         });
     }
