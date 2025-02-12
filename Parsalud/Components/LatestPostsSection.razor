@@ -1,9 +1,15 @@
-﻿<section class="latest-posts">
+﻿@inject IPostService PostService
+
+<section class="latest-posts">
     <h3 class="latest-posts__title" title="Últimas publicaciones de Parsalud">Últimas publicaciones</h3>
     <div class="latest-posts__posts">
-        <LatestPost ImgSrc="./images/latest-post-1.jpeg" Category="Categoría" Title="Título del artículo 123456789" Description="Unleash the power of WTW's data, advisory and software solutions to provide your organization with the right employee insights at the right time." />
-        <LatestPost ImgSrc="./images/latest-post-2.jpeg" Category="Categoría 1234567891011111" Title="Título del artículo" Description="Unleash the power of WTW's data, advisory and software solutions to provide your organization with the right employee insights at the right time. Unleash the power of WTW's data, advisory and software solutions to provide your organization with the right employee insights at the right time." />
-        <LatestPost ImgSrc="./images/latest-post-3.jpeg" Category="Categoría" Title="Título del artículo" Description="Unleash the power of WTW's data, advisory and software solutions to provide your organization with the right employee insights at the right time." />
-        <LatestPost ImgSrc="./images/latest-post-4.jpeg" Category="Categoría" Title="Título del artículo" Description="Unleash the power of WTW's data, advisory and software solutions to provide your organization with the right employee insights at the right time." />
+        @foreach (var LatestPost in LatestPosts)
+        {
+            <LatestPost @key=@LatestPost.Id
+                        ImgSrc="./images/latest-post-1.jpeg"
+                        Category=@LatestPost.PostCategory
+                        Title=@LatestPost.Title
+                        Description=@LatestPost.Content />
+        }
     </div>
 </section>

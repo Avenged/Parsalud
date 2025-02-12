@@ -1,9 +1,9 @@
 ﻿@page "/Dashboard/Posts"
-@inject IPostService PostService
+@inject IPostService Service
 @inject NavigationManager NM
 
 <PageTitle>Artículos - Dashboard Parsalud</PageTitle>
-<RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1">Administrar artículos</RadzenText>
+<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">Administrar artículos</RadzenText>
 
 <RadzenStack>
     <RadzenCard>
@@ -20,29 +20,31 @@
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
                     <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text="Limpiar" Icon="refresh" />
-                    <RadzenButton class="rz-w-fit-content" Variant="Variant.Outlined" Text="Nuevo artículo" Icon="add" Click="CreateNew" />
+                    <RadzenButton class="rz-w-fit-content" Variant="Variant.Outlined" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
                 </RadzenStack>
             </RadzenStack>
         </RadzenTemplateForm>
     </RadzenCard>
 
-    @if (Posts is not null)
+    @if (Items is not null)
     {
         <RadzenCard>
-            @if (Posts.Length > 0)
+            @if (Items.Length > 0)
             {
-                <RadzenDataList TItem="ParsaludPost" Data="Posts">
-                    <Template>
-                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
-                            <RadzenText TextStyle="TextStyle.H3" TagName="TagName.H3">@context.Title</RadzenText>
-                            <RadzenStack Orientation="Orientation.Horizontal">
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" />
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" />
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="delete" />
+                <RadzenFieldset Text=@($"Resultados ({Items.Length})")>
+                    <RadzenDataList TItem="ParsaludPost" Data="Items" AllowVirtualization="true">
+                        <Template>
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                                <RadzenText>@context.Title</RadzenText>
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" />
+                                    <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" />
+                                    <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" />
+                                </RadzenStack>
                             </RadzenStack>
-                        </RadzenStack>
-                    </Template>
-                </RadzenDataList>
+                        </Template>
+                    </RadzenDataList>
+                </RadzenFieldset>
             }
             else
             {

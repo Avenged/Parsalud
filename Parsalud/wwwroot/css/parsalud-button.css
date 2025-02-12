@@ -1,5 +1,6 @@
 ﻿.parsalud-button {
     display: flex;
+    text-decoration: none !important;
     gap: 0.30rem;
     align-items: center;
     white-space: nowrap;

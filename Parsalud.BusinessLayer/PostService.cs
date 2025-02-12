@@ -61,6 +61,7 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
                     Id = x.Id,
                     Content = x.Content,
                     Title = x.Title,
+                    PostCategory = x.PostCategory.Name,
                     Hidden = x.Hidden,
                     PostCategoryId = x.PostCategoryId,
                     CreatedAt = x.CreatedAt,
@@ -94,6 +95,36 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
             {
                 Id = x.Id,
                 Content = x.Content,
+                PostCategory = x.PostCategory.Name,
+                Title = x.Title,
+                Hidden = x.Hidden,
+                PostCategoryId = x.PostCategoryId,
+                CreatedAt = x.CreatedAt,
+                UpdatedAt = x.UpdatedAt,
+            }).ToArrayAsync(cancellationToken);
+
+            return BusinessResponse.Success(entity);
+        }
+        catch
+        {
+            return BusinessResponse.Error<ParsaludPost[]>("Ocurrió un error inesperado");
+        }
+    }
+
+    public async Task<BusinessResponse<ParsaludPost[]>> GetLatestAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            
+            var query = dbContext.Posts.Take(4)
+                .OrderByDescending(x => x.CreatedById);
+
+            var entity = await query.Select(x => new ParsaludPost
+            {
+                Id = x.Id,
+                Content = x.Content,
+                PostCategory = x.PostCategory.Name,
                 Title = x.Title,
                 Hidden = x.Hidden,
                 PostCategoryId = x.PostCategoryId,

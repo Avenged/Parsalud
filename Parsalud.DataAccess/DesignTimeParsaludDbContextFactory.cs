@@ -9,7 +9,12 @@ public class DesignTimeParsaludDbContextFactory : IDesignTimeDbContextFactory<Pa
     public ParsaludDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<ParsaludDbContext>();
-        optionsBuilder.UseSqlServer("Server=.;Database=Parsalud;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;");
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+               .SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json")
+               .Build();
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        optionsBuilder.UseSqlServer(connectionString);
 
         return new ParsaludDbContext(optionsBuilder.Options);
     }

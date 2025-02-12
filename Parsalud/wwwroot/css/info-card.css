@@ -1,5 +1,5 @@
 ﻿:root {
-    --info-card-width: 20.833rem;
+    --info-card-width: 22.5rem;
 }
 
 .info-card {
@@ -32,20 +32,11 @@
         user-drag: none;
     }
 
-    .info-card__header > img:not([decoration]) {
-        width: var(--info-card-width);
-        top: 0;
+    .info-card__header > img {
+        transform-origin: left bottom;
+        transform: scale(0.9);
         aspect-ratio: 4 / 3;
-        position: relative;
-        left: 17.2px;
-        margin-bottom: 17.3px;
         object-fit: cover;
-    }
-
-    .info-card__header > img[decoration] {
-        position: absolute;
-        left: 0;
-        bottom: 0;
     }
 
 .info-card a {

@@ -10,6 +10,7 @@ builder.Services.AddGeneratedServices(typeof(Parsalud.BusinessLayer.Abstractions
 builder.Services.AddRadzenComponents();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
+builder.Services.AddAuthenticationStateDeserialization();
+//builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
 
 await builder.Build().RunAsync();

@@ -4,6 +4,7 @@ using Parsalud.DataAccess.Models;
 using Parsalud.DataAccess;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Parsalud.Components.Account;
 
 namespace Parsalud.Extensions;
 
@@ -13,7 +14,7 @@ public static class SecurityExtensions
     {
         services.AddScoped<IdentityUserAccessor>();
         services.AddScoped<IdentityRedirectManager>();
-        services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+        services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
         services.AddIdentityCore<ParsaludUser>(options =>
         {
             options.SignIn.RequireConfirmedAccount = false;

@@ -1,0 +1,24 @@
+﻿@inject ISectionService Service
+
+@if (!string.IsNullOrWhiteSpace(content))
+{
+    @((MarkupString)content)
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required string Code { get; set; }
+
+    private string? content;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Service.GetByCodeAsync(Code);
+
+        if (response.IsSuccessWithData)
+        {
+            content = response.Data.Content;
+        }
+    }
+}

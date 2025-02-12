@@ -125,6 +125,47 @@ namespace Parsalud.DataAccess.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Parsalud.DataAccess.Models.Faq", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Hidden")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UpatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("UpatedById");
+
+                    b.ToTable("Faqs");
+                });
+
             modelBuilder.Entity("Parsalud.DataAccess.Models.ParsaludRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -299,6 +340,54 @@ namespace Parsalud.DataAccess.Migrations
                     b.ToTable("PostCategories");
                 });
 
+            modelBuilder.Entity("Parsalud.DataAccess.Models.Section", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Hidden")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UpatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("UpatedById");
+
+                    b.ToTable("Sections");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Parsalud.DataAccess.Models.ParsaludRole", null)
@@ -350,6 +439,23 @@ namespace Parsalud.DataAccess.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Parsalud.DataAccess.Models.Faq", b =>
+                {
+                    b.HasOne("Parsalud.DataAccess.Models.ParsaludUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Parsalud.DataAccess.Models.ParsaludUser", "UpatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("UpatedBy");
+                });
+
             modelBuilder.Entity("Parsalud.DataAccess.Models.Post", b =>
                 {
                     b.HasOne("Parsalud.DataAccess.Models.ParsaludUser", "CreatedBy")
@@ -376,6 +482,23 @@ namespace Parsalud.DataAccess.Migrations
                 });
 
             modelBuilder.Entity("Parsalud.DataAccess.Models.PostCategory", b =>
+                {
+                    b.HasOne("Parsalud.DataAccess.Models.ParsaludUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Parsalud.DataAccess.Models.ParsaludUser", "UpatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("UpatedBy");
+                });
+
+            modelBuilder.Entity("Parsalud.DataAccess.Models.Section", b =>
                 {
                     b.HasOne("Parsalud.DataAccess.Models.ParsaludUser", "CreatedBy")
                         .WithMany()

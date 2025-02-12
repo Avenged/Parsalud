@@ -1,4 +1,6 @@
-﻿namespace Parsalud.BusinessLayer.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Parsalud.BusinessLayer.Abstractions;
 
 public class BusinessResponse
 {
@@ -46,8 +48,30 @@ public class BusinessResponse
     }
 }
 
-public class BusinessResponse<T> : BusinessResponse
+public class BusinessResponse<T>
     where T : class
 {
+    public required string? Message { get; init; }
+
+    /// <summary>
+    /// The request was successful.
+    /// </summary>
+    public required bool IsSuccess { get; init; }
+
+    /// <summary>
+    /// The request was successful and the data is not null.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(Data))]
+    public bool IsSuccessWithData { get => IsSuccess && Data is not null; }
+
     public required T? Data { get; init; }
+
+    public static implicit operator BusinessResponse(BusinessResponse<T> instance)
+    {
+        return new BusinessResponse
+        {
+            IsSuccess = instance.IsSuccess,
+            Message = instance.Message,
+        };
+    }
 }

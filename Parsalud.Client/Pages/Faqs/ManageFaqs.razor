@@ -1,0 +1,60 @@
+﻿@page "/Dashboard/Faqs"
+@inject IFaqService Service
+@inject NavigationManager NM
+
+<PageTitle>FAQs - Dashboard Parsalud</PageTitle>
+<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">Administrar FAQs</RadzenText>
+
+<RadzenStack>
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H5">Buscar FAQs</RadzenText>
+        <RadzenTemplateForm TItem="ManageFaqs" Data="this" Submit="Submit">
+            <RadzenStack>
+                <RadzenRow>
+                    <RadzenColumn SizeMD="12">
+                        <RadzenFormField class="rz-w-100" Text="Pregunta">
+                            <RadzenTextBox @bind-Value=@Criteria.Question />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn SizeMD="12">
+                        <RadzenFormField class="rz-w-100" Text="Respuesta">
+                            <RadzenTextArea @bind-Value=@Criteria.Answer />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
+                    <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text="Limpiar" Icon="refresh" />
+                    <RadzenButton class="rz-w-fit-content" Variant="Variant.Outlined" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenTemplateForm>
+    </RadzenCard>
+
+    @if (Items is not null)
+    {
+        <RadzenCard>
+            @if (Items.Length > 0)
+            {
+                <RadzenFieldset Text=@($"Resultados ({Items.Length})")>
+                    <RadzenDataList TItem="ParsaludFaq" Data="Items" AllowVirtualization="true">
+                        <Template>
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                                <RadzenText>@context.Question</RadzenText>
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" />
+                                    <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" />
+                                    <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" />
+                                </RadzenStack>
+                            </RadzenStack>
+                        </Template>
+                    </RadzenDataList>
+                </RadzenFieldset>
+            }
+            else
+            {
+                <RadzenText>No se encontraron resultados</RadzenText>
+            }
+        </RadzenCard>
+    }
+</RadzenStack>

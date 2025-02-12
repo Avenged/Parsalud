@@ -21,7 +21,7 @@
                           class="@Class"
                           Size="Size"
                           MouseEnter="@(args => ShowTooltip(args))"
-                          MouseLeave="@(args => HideTooltip(args))"
+                          MouseLeave="@(args => HideTooltip())"
                           Disabled="@Disabled" />
         </NavLink>
     }
@@ -41,7 +41,7 @@
                       class="@Class"
                       Size="Size"
                       MouseEnter="@(args => ShowTooltip(args))"
-                      MouseLeave="@(args => HideTooltip(args))"
+                      MouseLeave="@(args => HideTooltip())"
                       Disabled="@Disabled" />
     }
 }
@@ -162,6 +162,7 @@
         }
         catch (Exception)
         {
+            // This is expected
         }
 
         CMS.Close();
@@ -186,11 +187,12 @@
             }
             catch
             {
+                // This is expected
             }
         }
     }
 
-    private void HideTooltip(ElementReference elementReference)
+    private void HideTooltip()
     {
         @if (HideTooltipOnMouseLeave)
         {
@@ -200,6 +202,7 @@
             }
             catch
             {
+                // This is expected
             }
         }
     }

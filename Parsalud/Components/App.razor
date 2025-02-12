@@ -49,7 +49,7 @@
     {
         <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
     }
-    else
+    else if (isLanding)
     {
         <script type="text/javascript">
             function handleScreenSizeChange(event) {
@@ -69,6 +69,12 @@
         </script>
     }
 
+    <script src="@Assets["js/app.js"]"></script>
+    <script src="@Assets["js/parsalud-button.js"]"></script>
+    <script src="@Assets["js/button-arrow.js"]"></script>
+    <script src="@Assets["js/email-icon.js"]"></script>
+    <script src="@Assets["js/phone-icon.js"]"></script>
+    <script src="@Assets["js/location-icon.js"]"></script>
     <script src="@Assets["lib/bootstrap/dist/js/bootstrap.min.js"]"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>

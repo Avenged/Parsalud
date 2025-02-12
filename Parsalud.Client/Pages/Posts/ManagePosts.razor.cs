@@ -5,21 +5,24 @@ namespace Parsalud.Client.Pages.Posts;
 
 public partial class ManagePosts : ComponentBase
 {
+    public const string NEW_ITEM_TEXT = "Nuevo artículo";
+    public const string CREATE_PATH = "Dashboard/Post/Create";
+
     public PostSearchCriteria Criteria { get; } = new();
-    public ParsaludPost[]? Posts { get; set; }
+    public ParsaludPost[]? Items { get; set; }
     public bool IsSearching { get; set; }
 
     public async Task Submit()
     {
-        Posts = null;
+        Items = null;
         IsSearching = true;
         await Task.Yield();
 
-        var response = await PostService.GetByCriteriaAsync(Criteria);
+        var response = await Service.GetByCriteriaAsync(Criteria);
 
         if (response.IsSuccess)
         {
-            Posts = response.Data;
+            Items = response.Data;
         }
 
         IsSearching = false;
@@ -27,6 +30,6 @@ public partial class ManagePosts : ComponentBase
 
     public void CreateNew()
     {
-        NM.NavigateTo("Dashboard/Post/Create");
+        NM.NavigateTo(CREATE_PATH);
     }
 }

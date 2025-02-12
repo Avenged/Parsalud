@@ -15,6 +15,7 @@ public partial class App : ComponentBase
     private static readonly StringComparison comparison = StringComparison.InvariantCultureIgnoreCase;
     private bool useInteractiveIdentityRoutes;
     private bool isDashboard;
+    private bool isLanding;
     private IComponentRenderMode? renderModeForPage;
 
     private IComponentRenderMode? RenderModeForPage
@@ -34,6 +35,11 @@ public partial class App : ComponentBase
         {
             isDashboard = true;
             RenderModeForPage = GetRenderMode();
+        }
+
+        if (!HttpContext.Request.Path.StartsWithSegments("/Account", StringComparison.InvariantCultureIgnoreCase))
+        {
+            isLanding = true;
         }
     }
 
@@ -80,6 +86,6 @@ public partial class App : ComponentBase
         // }
 
         // Default rendering mode
-        return Auto;
+        return Wasm;
     }
 }
