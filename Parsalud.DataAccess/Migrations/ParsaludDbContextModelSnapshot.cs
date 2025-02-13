@@ -370,6 +370,9 @@ namespace Parsalud.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("StyleSheetId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("UpatedById")
                         .HasColumnType("uniqueidentifier");
 
@@ -382,6 +385,8 @@ namespace Parsalud.DataAccess.Migrations
                         .IsUnique();
 
                     b.HasIndex("CreatedById");
+
+                    b.HasIndex("StyleSheetId");
 
                     b.HasIndex("UpatedById");
 
@@ -547,11 +552,17 @@ namespace Parsalud.DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Parsalud.DataAccess.Models.StyleSheet", "StyleSheet")
+                        .WithMany("Sections")
+                        .HasForeignKey("StyleSheetId");
+
                     b.HasOne("Parsalud.DataAccess.Models.ParsaludUser", "UpatedBy")
                         .WithMany()
                         .HasForeignKey("UpatedById");
 
                     b.Navigation("CreatedBy");
+
+                    b.Navigation("StyleSheet");
 
                     b.Navigation("UpatedBy");
                 });
@@ -576,6 +587,11 @@ namespace Parsalud.DataAccess.Migrations
             modelBuilder.Entity("Parsalud.DataAccess.Models.PostCategory", b =>
                 {
                     b.Navigation("Posts");
+                });
+
+            modelBuilder.Entity("Parsalud.DataAccess.Models.StyleSheet", b =>
+                {
+                    b.Navigation("Sections");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NUglify;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
+using System.Text;
 using VENative.Blazor.ServiceGenerator.Attributes;
 
 namespace Parsalud.BusinessLayer;
@@ -13,27 +15,33 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
     private readonly IDbContextFactory<ParsaludDbContext> dbContextFactory = dbContextFactory;
     private readonly IUserService userService = userService;
 
-    public async Task<BusinessResponse> CreateAsync(ManageStyleSheetRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<ParsaludStyleSheet>> CreateAsync(ManageStyleSheetRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            dbContext.Add(new StyleSheet
+            StyleSheet styleSheet = new()
             {
                 Id = Guid.NewGuid(),
                 FileName = request.FileName,
                 Content = request.Content,
                 CreatedAt = DateTime.Now,
                 CreatedById = userService.Id,
-            });
+            };
+            dbContext.Add(styleSheet);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            return BusinessResponse.Success();
+            return BusinessResponse.Success(new ParsaludStyleSheet
+            {
+                Id = styleSheet.Id,
+                Content = styleSheet.Content,
+                FileName = styleSheet.FileName,
+            });
         }
         catch (Exception)
         {
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            return BusinessResponse.Error<ParsaludStyleSheet>("Ocurrió un error inesperado");
         }
     }
 
@@ -143,5 +151,36 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
         {
             return BusinessResponse.Error<ParsaludStyleSheet>("Ocurrió un error inesperado");
         }
+    }
+
+    public async Task<BusinessResponse<string>> GetBundleCssAsync(CancellationToken cancellationToken = default)
+    {
+        StringBuilder sb = new();
+
+        var stylesheetsTask = GetByCriteriaAsync(new StyleSheetSearchCriteria(), cancellationToken);
+        var response = await GetByFileNameAsync("app.css", cancellationToken);
+
+        if (!response.IsSuccessWithData)
+        {
+            return BusinessResponse.Error<string>("Ocurrió un error inesperado");
+        }
+
+        sb.AppendLine(response.Data!.Content);
+
+        var stylesheets = await stylesheetsTask;
+        if (stylesheets.IsSuccessWithData)
+        {
+            foreach (var styleSheet in stylesheets.Data)
+            {
+                if (styleSheet.FileName.Equals("app.css", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+                sb.AppendLine(styleSheet.Content);
+            }
+        }
+
+        var content = Uglify.Css(sb.ToString());
+        return BusinessResponse.Success(content.Code);
     }
 }

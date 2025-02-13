@@ -22,7 +22,7 @@
     }
     else
     {
-        <link rel="stylesheet" href="css/app.css" />
+        <link rel="stylesheet" href="css/bundle.min.css" />
         <HeadOutlet />
     }
 </head>
@@ -47,6 +47,13 @@
 
     @if (isDashboard)
     {
+        <script src="@Assets["lib/prettier/standalone.js"]"></script>
+        <script src="@Assets["lib/prettier/plugins/html.js"]"></script>
+        <script src="@Assets["lib/prettier/plugins/postcss.js"]"></script>
+        <script src="@Assets["js/dashboard.js"]"></script>
+        <script src="_content/BlazorMonaco/jsInterop.js"></script>
+        <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>
+        <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
         <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
     }
     else if (isLanding)

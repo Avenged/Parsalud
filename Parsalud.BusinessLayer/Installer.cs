@@ -12,7 +12,8 @@ public static class Installer
     {
         services.AddDbContextFactory<ParsaludDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            options.UseSqlServer(connectionString);
         });
 
         services.AddTransient<IStyleSheetService, StyleSheetService>();

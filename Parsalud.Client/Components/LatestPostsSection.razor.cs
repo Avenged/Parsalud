@@ -2,7 +2,7 @@
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.BusinessLayer;
 
-namespace Parsalud.Components;
+namespace Parsalud.Client.Components;
 
 public partial class LatestPostsSection : ComponentBase
 {

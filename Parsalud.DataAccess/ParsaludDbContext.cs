@@ -48,12 +48,22 @@ public class ParsaludDbContext(DbContextOptions<ParsaludDbContext> options) : Id
         {
             x.HasIndex(x => x.Code)
                 .IsUnique(unique: true);
+
+            x.HasOne(x => x.StyleSheet)
+                .WithMany(x => x.Sections)
+                .HasForeignKey(x => x.StyleSheetId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         builder.Entity<StyleSheet>(x =>
         {
             x.HasIndex(x => x.FileName)
                 .IsUnique(unique: true);
+
+            x.HasMany(x => x.Sections)
+                .WithOne(x => x.StyleSheet)
+                .HasForeignKey(x => x.StyleSheetId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }
 }

@@ -5,9 +5,11 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>preview</LangVersion>
+		<UserSecretsId>42d59443-9f8a-404c-a887-de8cd3fbe6e3</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="BlazorMonaco" Version="3.3.0" />
 		<ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator.Extensions\VENative.Blazor.ServiceGenerator.Extensions.csproj" />
 		<ProjectReference Include="..\Parsalud.BusinessLayer\Parsalud.BusinessLayer.csproj" />
 		<ProjectReference Include="..\Parsalud.Client\Parsalud.Client.csproj" />
@@ -19,7 +21,6 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
-		<PackageReference Include="NUglify" Version="1.21.11" />
 		<PackageReference Include="Radzen.Blazor" Version="5.9.8" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
 			<PrivateAssets>all</PrivateAssets>

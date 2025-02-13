@@ -8,6 +8,7 @@ public class SectionModel
     public string? Name { get; set; }
     public string? Code { get; set; }
     public string? Content { get; set; }
+    public Guid? StyleSheetId { get; set; }
     public bool Hidden { get; set; }
 
     public ManageSectionRequest ToRequest()
@@ -17,6 +18,7 @@ public class SectionModel
             Name = Name ?? "",
             Code = Code ?? "",
             Content = Content ?? "",
+            StyleSheetId = StyleSheetId,
             Hidden = false,
         };
     }

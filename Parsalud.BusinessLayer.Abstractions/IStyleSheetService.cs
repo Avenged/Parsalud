@@ -5,7 +5,8 @@ namespace Parsalud.BusinessLayer.Abstractions;
 [GenerateClient]
 public interface IStyleSheetService
 {
-    Task<BusinessResponse> CreateAsync(ManageStyleSheetRequest request, CancellationToken cancellationToken = default);
+    Task<BusinessResponse<string>> GetBundleCssAsync(CancellationToken cancellationToken = default);
+    Task<BusinessResponse<ParsaludStyleSheet>> CreateAsync(ManageStyleSheetRequest request, CancellationToken cancellationToken = default);
     Task<BusinessResponse> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<BusinessResponse<ParsaludStyleSheet[]>> GetByCriteriaAsync(StyleSheetSearchCriteria criteria, CancellationToken cancellationToken = default);
     Task<BusinessResponse<ParsaludStyleSheet>> GetByFileNameAsync(string fileName, CancellationToken cancellationToken = default);

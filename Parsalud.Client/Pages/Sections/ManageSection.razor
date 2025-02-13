@@ -3,14 +3,17 @@
 @page "/Dashboard/Section/{Id:guid}/View"
 
 @inject ISectionService Service
+@inject IStyleSheetService StyleSheetService
 
 @inherits BaseAbm<Guid>
+
+@using Radzen.Blazor.Rendering
 
 <PageTitle>@Action("Nueva", "Editar", "Ver") sección - Dashboard Parsalud</PageTitle>
 <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nueva", "Editar", "Ver") sección</RadzenText>
 
 <RadzenCard>
-    <RadzenTemplateForm TItem="SectionModel" Data="Model" Submit="Submit">
+    <RadzenTemplateForm @ref="Form" TItem="SectionModel" Data="Model" Submit="Submit">
         <RadzenStack>
             <RadzenRow>
                 <RadzenColumn SizeMD="6">
@@ -28,17 +31,98 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn SizeMD="12">
-                    <RadzenHtmlEditor Name=@nameof(Model.Content) Disabled=@ReadOnly Style="min-height:400px" @bind-Value=@Model.Content />
+                    <RadzenText Text="Vista HTML" />
+                    <DynamicClientSection Html=@DesignerContent Style="min-height:400px;max-height:400px;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn SizeMD="12">
+                    <RadzenText Text="Código HTML" />
+                    <MonacoEditor id="@editorHtmlId"
+                                  Name=@nameof(Model.Content)
+                                  Language="html"
+                                  ValueChanged="SourceChange"
+                                  Value="@Model.Content" />
                     <RadzenRequiredValidator Component=@nameof(Model.Content) Text="El contenido de la sección no debe estar vacío" />
+                </RadzenColumn>
+            </RadzenRow>
+            @if (StyleSheetModel is not null)
+            {
+                <RadzenRow>
+                    <RadzenColumn SizeMD="12">
+                        <RadzenText Text="Código CSS" />
+                        <MonacoEditor id="@editorCssId"
+                                      Name=@nameof(Model.Content)
+                                      Language="css"
+                                      ReadOnly="@ReadOnly"
+                                      ValueChanged="StyleChanged"
+                                      Value=@StyleSheetModel.Content />
+                    </RadzenColumn>
+                </RadzenRow>
+            }
+            <RadzenRow>
+                <RadzenColumn SizeMD="6">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                        <RadzenDropDown TValue="ParsaludStyleSheet"
+                                        class="rz-w-100"
+                                        Placeholder="Hoja de estilos"
+                                        Data="StyleSheets"
+                                        TextProperty=@nameof(ParsaludStyleSheet.FileName)
+                                        AllowClear="true"
+                                        AllowFiltering="true"
+                                        FilterAsYouType="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        FilterOperator="StringFilterOperator.Contains"
+                                        ValueChanged="StyleSheetChange"
+                                        Value="StyleSheet" />
+                        <ButtonWithTooltip @ref=Button class="rz-h-100" Icon="add" TooltipText="Nueva hoja de estilos" Click="CreateNewStyleSheet" />
+                    </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenStack Orientation="Orientation.Horizontal">
                 @if (!ReadOnly)
                 {
                     <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
+                    @if (AbmAction == AbmAction.Update)
+                    {
+                        <RadzenButton class="rz-w-fit-content" Click="ManualSubmit" Text=@Action(update: "Guardar cambios sin salir") Icon="save" IsBusy=@IsBusy BusyText=@Action(update: "Actualizando...") />
+                    }
                 }
                 <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text=@(ReadOnly ? "Volver" : "Descartar") Icon="keyboard_return" Click="Discard" />
             </RadzenStack>
+            @if (!string.IsNullOrWhiteSpace(ErrorMsg))
+            {
+                <RadzenAlert Title="Ocurrió un error" Text=@ErrorMsg AlertStyle="AlertStyle.Danger" AllowClose="false" />
+            }
         </RadzenStack>
     </RadzenTemplateForm>
 </RadzenCard>
+
+<style type="text/css">
+    @($"#{editorHtmlId}, #{editorCssId}")
+    {
+        height: 400px;
+    }
+
+    .my-popup {
+        display: none;
+        position: absolute;
+        overflow: hidden;
+        width: 600px;
+        border: var(--rz-panel-border);
+        background-color: var(--rz-panel-background-color);
+        box-shadow: var(--rz-panel-shadow);
+        border-radius: var(--rz-border-radius);
+    }
+</style>
+
+<Popup @ref=Popup Lazy=true class="my-popup">
+    <RadzenRow>
+        <RadzenColumn SizeMD="10">
+            <RadzenTextBox class="rz-w-100" Placeholder="Nombre de archivo" ReadOnly=@ReadOnly @bind-Value=@CreateStyleSheetModel.FileName />
+        </RadzenColumn>
+        <RadzenColumn SizeMD="2">
+            <RadzenButton Text="Crear" Click="CreateStyleSheet" BusyText="Creando..." IsBusy=@CreatingStyleSheet />
+        </RadzenColumn>
+    </RadzenRow>
+</Popup>

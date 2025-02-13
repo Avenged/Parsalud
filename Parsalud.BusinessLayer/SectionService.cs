@@ -25,6 +25,7 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                 Name = request.Name,
                 Code = request.Code.ToUpper(),
                 Content = request.Content,
+                StyleSheetId = request.StyleSheetId,
                 Hidden = request.Hidden,
                 CreatedAt = DateTime.Now,
                 CreatedById = userService.Id,
@@ -49,6 +50,7 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
             entity.Code = request.Code;
             entity.Name = request.Name;
             entity.Content = request.Content;
+            entity.StyleSheetId = request.StyleSheetId;
             entity.Hidden = request.Hidden;
             entity.UpdatedAt = DateTime.Now;
             entity.UpatedById = userService.Id;
@@ -80,6 +82,7 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                     Content = x.Content,
                     Name = x.Name,
                     Code = x.Code.ToUpper(),
+                    StyleSheetId = x.StyleSheetId,
                     Hidden = x.Hidden,
                 }).FirstOrDefaultAsync(cancellationToken);
 
@@ -118,6 +121,7 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                 Content = x.Content,
                 Name = x.Name,
                 Code = x.Code.ToUpper(),
+                StyleSheetId = x.StyleSheetId,
                 Hidden = x.Hidden,
             }).ToArrayAsync(cancellationToken);
 
@@ -142,6 +146,7 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                     Content = x.Content,
                     Name = x.Name,
                     Code = x.Code,
+                    StyleSheetId = x.StyleSheetId,
                     Hidden = x.Hidden,
                 }).FirstOrDefaultAsync(cancellationToken);
 

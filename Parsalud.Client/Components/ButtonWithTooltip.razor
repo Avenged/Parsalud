@@ -11,6 +11,7 @@
         <NavLink href=@Link>
             <RadzenButton Text="@Text"
                           Variant="@Variant"
+                          @ref=@Button
                           Icon="@Icon"
                           IsBusy="@IsBusy"
                           BusyText="@BusyText"
@@ -29,6 +30,7 @@
     {
         <RadzenButton Text="@Text"
                       @onmousedown="@InternalClick"
+                      @ref=@Button
                       Variant="@Variant"
                       Icon="@Icon"
                       IsBusy="@IsBusy"
@@ -47,6 +49,9 @@
 }
 
 @code {
+    [Parameter]
+    public RadzenButton Button { get; set; } = null!;
+
     [Parameter]
     public string? Link { get; set; }
 
@@ -136,10 +141,10 @@
         if (string.IsNullOrWhiteSpace(Link)) return;
 
         CMS.Open(
-            args, 
+            args,
             [
                 new ContextMenuItem() { Text = "Abrir vínculo en una nueva pestaña", Value = 1, Icon = "tab" },
-                new ContextMenuItem() { Text = "Copiar vínculo", Value = 2, Icon = "link" }
+            new ContextMenuItem() { Text = "Copiar vínculo", Value = 2, Icon = "link" }
             ],
             OnMenuItemClick);
     }
@@ -175,15 +180,15 @@
             try
             {
                 TS.Open(elementReference, TooltipText, new TooltipOptions
-                {
-                    Position = TooltipPosition,
-                    Delay = TooltipDelay,
-                    Duration = TooltipDuration,
-                    CloseTooltipOnDocumentClick = CloseTooltipOnDocumentClick,
-                    Style = TooltipStyle,
-                    CssClass = TooltipCssClass,
-                    Text = TooltipText,
-                });
+                    {
+                        Position = TooltipPosition,
+                        Delay = TooltipDelay,
+                        Duration = TooltipDuration,
+                        CloseTooltipOnDocumentClick = CloseTooltipOnDocumentClick,
+                        Style = TooltipStyle,
+                        CssClass = TooltipCssClass,
+                        Text = TooltipText,
+                    });
             }
             catch
             {

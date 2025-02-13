@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Parsalud.BusinessLayer.Abstractions;
+﻿namespace Parsalud.BusinessLayer.Abstractions;
 
 public class ManageSectionRequest
 {
@@ -12,4 +6,5 @@ public class ManageSectionRequest
     public required string Code { get; init; }
     public required string Content { get; init; }
     public required bool Hidden { get; init; }
+    public required Guid? StyleSheetId { get; init; }
 }
