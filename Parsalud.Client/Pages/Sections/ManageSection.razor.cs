@@ -21,10 +21,12 @@ public partial class ManageSection : BaseAbm<Guid>
     public string? ErrorMsg { get; set; }
     public bool CreatingStyleSheet { get; set; }
     public RadzenTemplateForm<SectionModel> Form { get; set; } = null!;
+    public bool ParametrosRutaSelected { get; set; }
+    public Guid LiveServerId { get; set; }
 
     private readonly string editorHtmlId = "ed_" + Guid.NewGuid().ToString();
     private readonly string editorCssId = "ed_" + Guid.NewGuid().ToString();
-
+    private int iframei;
     private DotNetObjectReference<ManageSection> reference = null!;
 
     public string? DesignerContent
@@ -34,13 +36,10 @@ public partial class ManageSection : BaseAbm<Guid>
             StringBuilder sb = new();
             if (StyleSheetModel is not null)
             {
-                sb.Append("<Style Value=\"");
-                sb.Append("@import url('css/bundle.min.css');");
-                if (!string.IsNullOrWhiteSpace(StyleSheetModel.Content))
-                {
-                    sb.Append(StyleSheetModel.Content.Replace("\n", " "));
-                } 
-                sb.AppendLine("\" />");
+                sb.AppendLine("<style>");
+                sb.AppendLine("@import url('css/bundle.min.css');");
+                sb.AppendLine(StyleSheetModel.Content);
+                sb.AppendLine("</style>");
             }
             sb.AppendLine(designerContent);
             return sb.ToString();
@@ -55,6 +54,8 @@ public partial class ManageSection : BaseAbm<Guid>
 
     protected override async Task OnInitializedAsync()
     {
+        LiveServerId = Guid.NewGuid();
+
         await FetchStyleSheetsAsync();
 
         if (Id == Guid.Empty)
@@ -63,6 +64,12 @@ public partial class ManageSection : BaseAbm<Guid>
         }
 
         await FetchResourceAsync();
+        await Service.UpdateLiveServerAsync(new LiveServerInstance
+        {
+            Id = LiveServerId,
+            Css = StyleSheetModel?.Content,
+            Html = Model.Content,
+        });
     }
 
     private async Task FetchResourceAsync()
@@ -72,13 +79,22 @@ public partial class ManageSection : BaseAbm<Guid>
         if (response.IsSuccessWithData)
         {
             DesignerContent = response.Data.Content;
+            var data = response.Data;
+
             Model = new SectionModel()
             {
-                Id = response.Data.Id,
-                Code = response.Data.Code,
-                Name = response.Data.Name,
-                Content = response.Data.Content,
-                Hidden = response.Data.Hidden,
+                Id = data.Id,
+                Code = data.Code,
+                Name = data.Name,
+                Content = data.Content,
+                Hidden = data.Hidden,
+                Page = data.Page,
+                Param1 = data.Param1,
+                Param2 = data.Param2,
+                Param3 = data.Param3,
+                Param4 = data.Param4,
+                Param5 = data.Param5,
+                Param6 = data.Param6,
                 StyleSheetId = response.Data.StyleSheetId,
             };
 
@@ -130,15 +146,20 @@ public partial class ManageSection : BaseAbm<Guid>
             return;
         }
 
-        var success = await GeneralSubmit(keep: true);
+        var response = await GeneralSubmit(keep: true);
 
-        if (success)
+        if (response?.IsSuccess ?? false)
         {
             NS.Notify(Radzen.NotificationSeverity.Success, "Cambios guardados");
         }
         else
         {
-            NS.Notify(Radzen.NotificationSeverity.Warning, "No pudimos guardar los cambios");
+            NS.Notify(Radzen.NotificationSeverity.Warning, summary: "No pudimos guardar los cambios", detail: response?.Message);
+        }
+
+        if (AbmAction == AbmAction.Create && (response?.IsSuccessWithData ?? false))
+        {
+            NM.NavigateTo($"Dashboard/Section/{response.Data.Id}/Update");
         }
     }
 
@@ -147,11 +168,11 @@ public partial class ManageSection : BaseAbm<Guid>
         await GeneralSubmit(keep: false);
     }
 
-    private async Task<bool> GeneralSubmit(bool keep)
+    private async Task<BusinessResponse<ParsaludSection>?> GeneralSubmit(bool keep)
     {
         if (ReadOnly)
         {
-            return false;
+            return null;
         }
 
         var styleSheetSaved = await SubmitStyleSheetAsync();
@@ -159,10 +180,10 @@ public partial class ManageSection : BaseAbm<Guid>
         if (styleSheetSaved is not null && !styleSheetSaved.Value)
         {
             ErrorMsg = "No se pudo guardar los cambios de la hoja de estilo";
-            return false;
+            return null;
         }
 
-        BusinessResponse? response;
+        BusinessResponse<ParsaludSection>? response;
         if (AbmAction == AbmAction.Create)
         {
             response = await Service.CreateAsync(Model.ToRequest());
@@ -181,7 +202,7 @@ public partial class ManageSection : BaseAbm<Guid>
             NM.NavigateTo(MAIN_PATH);
         }
 
-        return response.IsSuccess;
+        return response;
     }
 
     private async Task<bool?> SubmitStyleSheetAsync()
@@ -247,6 +268,13 @@ public partial class ManageSection : BaseAbm<Guid>
     private void StyleChanged(string? content)
     {
         StyleSheetModel!.Content = content;
+        Service.UpdateLiveServerAsync(new LiveServerInstance
+        {
+            Id = LiveServerId,
+            Css = StyleSheetModel?.Content,
+            Html = Model.Content,
+        });
+        iframei++;
     }
 
     public void Discard()
@@ -258,5 +286,23 @@ public partial class ManageSection : BaseAbm<Guid>
     {
         Model.Content = value;
         DesignerContent = value;
+        Service.UpdateLiveServerAsync(new LiveServerInstance
+        {
+            Id = LiveServerId,
+            Css = StyleSheetModel?.Content,
+            Html = Model.Content,
+        });
+        iframei++;
+    }
+
+    private void CodeChanged()
+    {
+        Service.UpdateLiveServerAsync(new LiveServerInstance
+        {
+            Id = LiveServerId,
+            Css = StyleSheetModel?.Content,
+            Html = Model.Content,
+        });
+        iframei++;
     }
 }

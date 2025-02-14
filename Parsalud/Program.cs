@@ -8,13 +8,12 @@ using Parsalud.DataAccess.Models;
 using Parsalud.Components.Account;
 using Microsoft.AspNetCore.Mvc;
 using Parsalud.BusinessLayer.Abstractions;
-using System.Text;
-using NUglify;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRadzenComponents();
 
+builder.Services.AddMemoryCache();
 builder.Services.AddBusinessLayer(builder.Configuration);
 builder.Services.AddSecurity();
 builder.Services.AddHttpContextAccessor();

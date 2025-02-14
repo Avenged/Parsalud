@@ -62,6 +62,8 @@
             function handleScreenSizeChange(event) {
                 const div = document.querySelector('#container');
 
+                if (!div) return;
+
                 if (event.matches) {
                     div.classList.remove('container-xxl');
                 } else {

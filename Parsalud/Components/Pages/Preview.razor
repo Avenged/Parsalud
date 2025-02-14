@@ -1,0 +1,16 @@
+﻿@page "/Preview/{Code}/{LiveServerId:guid}"
+
+@using Parsalud.Components.Layout
+@layout EmptyLayout
+
+<DynamicSection Code=@Code LiveServerId=@LiveServerId />
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required string Code { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required Guid LiveServerId { get; set; }
+}

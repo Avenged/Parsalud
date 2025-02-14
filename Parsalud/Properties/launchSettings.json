@@ -17,7 +17,7 @@
       "launchBrowser": true,
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7040;http://localhost:5091",
-      "launchUrl": "Dashboard/Sections",
+      "launchUrl": "Dashboard/Section/cec691f5-8bbf-44fd-b652-0ae1e8843627/Update",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

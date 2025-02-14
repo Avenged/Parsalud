@@ -1,0 +1,60 @@
+﻿@using Microsoft.Extensions.Caching.Memory
+@using Parsalud.Components.Layout
+
+@page "/Watch/{Code}/{LiveServerId:guid}"
+
+@implements IDisposable
+@inject IMemoryCache MemoryCache
+@inject NavigationManager NM
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@layout EmptyLayout
+
+<DynamicSection Code=@Code LiveServerId=@LiveServerId I=@i />
+@* <iframe @key=@i src=@($"{NM.BaseUri}Preview/{Code}/{LiveServerId}") style="height:99dvh;width:99.99dvw;"></iframe> *@
+
+@code {
+    private readonly PeriodicTimer timer = new(TimeSpan.FromSeconds(1));
+    private readonly CancellationTokenSource cts = new();
+
+    [Parameter]
+    [EditorRequired]
+    public required string Code { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required Guid LiveServerId { get; set; }
+
+    private int i;
+    private int currentI;
+
+    protected override void OnInitialized()
+    {
+        Task.Run(Verify, cts.Token);
+    }
+
+    private async Task Verify()
+    {
+        while (await timer.WaitForNextTickAsync())
+        {
+            var ls = MemoryCache.Get<LiveServerInstance>($"LiveServer-{LiveServerId}");
+            if (ls is not null)
+            {
+                var changes = currentI != ls.I;
+                if (changes)
+                {
+                    currentI = ls.I;
+                    i++;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        timer.Dispose();
+
+        cts.Cancel();
+        cts.Dispose();
+    }
+}

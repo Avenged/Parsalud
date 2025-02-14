@@ -1,6 +1,10 @@
 ﻿@using System.Text.RegularExpressions
+@using Microsoft.Extensions.Caching.Memory
+@using System.Text
 
+@inject IMemoryCache MemoryCache
 @inject ISectionService Service
+@inject NavigationManager NM
 
 @if (!string.IsNullOrWhiteSpace(content))
 {
@@ -12,6 +16,33 @@
     [EditorRequired]
     public required string Code { get; set; }
 
+    [Parameter]
+    public Guid? LiveServerId { get; set; }
+
+    [Parameter]
+    public int? I { get; set; }
+
+    [Parameter]
+    public string? Param1 { get; set; }
+
+    [Parameter]
+    public string? Param2 { get; set; }
+
+    [Parameter]
+    public string? Param3 { get; set; }
+
+    [Parameter]
+    public string? Param4 { get; set; }
+
+    [Parameter]
+    public string? Param5 { get; set; }
+
+    [Parameter]
+    public string? Param6 { get; set; }
+
+    private Guid? prevLiveServerId;
+    private string? prevCode;
+    private int? prevI;
     private string? content;
     private readonly Dictionary<string, Type> componentMappings = new()
     {
@@ -22,13 +53,55 @@
         // Agrega más componentes aquí según los que pueden llegar desde la base de datos.
     };
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        var response = await Service.GetByCodeAsync(Code);
+        if (prevI == I &&
+            prevCode == Code &&
+            prevLiveServerId == LiveServerId)
+            return;
+
+        prevI = I;
+        prevCode = Code;
+        prevLiveServerId = LiveServerId;
+
+        if (LiveServerId.HasValue)
+        {
+            var ls = MemoryCache.Get<LiveServerInstance>($"LiveServer-{LiveServerId}");
+            if (ls is not null)
+            {
+                StringBuilder sb = new();
+                if (!string.IsNullOrWhiteSpace(ls.Css))
+                {
+                    sb.AppendLine("<style>");
+                    sb.AppendLine("@import url('css/bundle.min.css');");
+                    sb.AppendLine(ls.Css);
+                    sb.AppendLine("</style>");
+                }
+                if (!string.IsNullOrWhiteSpace(ls.Html))
+                {
+                    sb.AppendLine(ls.Html);
+                }
+                content = sb.ToString();
+                return;
+            }
+        }
+
+        var response = await Service.GetByCodeAsync(
+            Code,
+            Param1,
+            Param2,
+            Param3,
+            Param4,
+            Param5,
+            Param6);
 
         if (response.IsSuccessWithData)
         {
             content = response.Data.Content;
+        }
+        else
+        {
+            NM.NavigateTo("NotFound", replace: true);
         }
     }
 
