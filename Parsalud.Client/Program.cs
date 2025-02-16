@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Parsalud.Client;
 using Radzen;
 using VENative.Blazor.ServiceGenerator.Extensions.BlazorWebAssembly;
 

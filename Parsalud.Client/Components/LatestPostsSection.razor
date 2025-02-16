@@ -1,6 +1,7 @@
 ﻿@inject IPostService PostService
+@inherits ParsaludComponent
 
-<section class="latest-posts">
+<section @attributes=@Attributes class="@GetCssClass()">
     <h3 class="latest-posts__title" title="Últimas publicaciones de Parsalud">Últimas publicaciones</h3>
     <div class="latest-posts__posts">
         @foreach (var LatestPost in LatestPosts)

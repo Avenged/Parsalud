@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
-using Parsalud.BusinessLayer.Abstractions;
-using Parsalud.BusinessLayer;
+﻿using Parsalud.BusinessLayer.Abstractions;
 
 namespace Parsalud.Client.Components;
 
-public partial class LatestPostsSection : ComponentBase
+public partial class LatestPostsSection : ParsaludComponent
 {
     private ParsaludPost[] LatestPosts { get; set; } = [];
 
@@ -16,5 +14,10 @@ public partial class LatestPostsSection : ComponentBase
         {
             LatestPosts = response.Data;
         }
+    }
+
+    protected override string GetComponentCssClass()
+    {
+        return "latest-posts";
     }
 }

@@ -22,11 +22,11 @@
 
     private readonly Dictionary<string, Type> componentMappings = new()
     {
-        { "Style", typeof(Style) },
-        { "CurrentPageTitle", typeof(CurrentPageTitle) },
-        { "DynamicSection", typeof(DynamicSection) },
-        { "Carousel", typeof(Carousel) },
-        { "LatestPostsSection", typeof(LatestPostsSection) }
+        { nameof(Style), typeof(Style) },
+        { nameof(CurrentPageTitle), typeof(CurrentPageTitle) },
+        { nameof(DynamicSection), typeof(DynamicSection) },
+        { nameof(LatestPostsSection), typeof(LatestPostsSection) },
+        { nameof(FaqList), typeof(FaqList) }
         // Agrega más componentes aquí según los que pueden llegar desde la base de datos.
     };
 

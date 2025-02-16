@@ -208,32 +208,32 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                 x.Code.ToUpper() == codeUpper);
 
             if (!string.IsNullOrWhiteSpace(param1))
-                query = query.Where(x => x.Param1!.ToUpper() == param1.ToUpper());
+                query = query.Where(x => x.Param1!.ToUpper() == param1.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param1 == null);
 
             if (!string.IsNullOrWhiteSpace(param2))
-                query = query.Where(x => x.Param2!.ToUpper() == param2.ToUpper());
+                query = query.Where(x => x.Param2!.ToUpper() == param2.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param2 == null);
 
             if (!string.IsNullOrWhiteSpace(param3))
-                query = query.Where(x => x.Param3!.ToUpper() == param3.ToUpper());
+                query = query.Where(x => x.Param3!.ToUpper() == param3.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param3 == null);
 
             if (!string.IsNullOrWhiteSpace(param4))
-                query = query.Where(x => x.Param4!.ToUpper() == param4.ToUpper());
+                query = query.Where(x => x.Param4!.ToUpper() == param4.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param4 == null);
 
             if (!string.IsNullOrWhiteSpace(param5))
-                query = query.Where(x => x.Param5!.ToUpper() == param5.ToUpper());
+                query = query.Where(x => x.Param5!.ToUpper() == param5.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param5 == null);
 
             if (!string.IsNullOrWhiteSpace(param6))
-                query = query.Where(x => x.Param6!.ToUpper() == param6.ToUpper());
+                query = query.Where(x => x.Param6!.ToUpper() == param6.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param6 == null);
 

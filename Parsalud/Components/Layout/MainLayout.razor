@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
+@inject NavigationManager NM
+
 <div id="container" class="container-xxl">
     <div class="page">
         @*     <div class="sidebar">
@@ -23,9 +25,17 @@
                     </div>
 
                     <div class="nav-item">
-                        <NavLink class="nav-link" href="Servicios" ActiveClass="nav-link-active">
-                            <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Servicios
-                        </NavLink>
+                        <div class="dropdown">
+                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color:transparent;border:none;color:inherit;font-weight:500;padding:var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);">
+                                Servicios
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesSalud") ActiveClass="nav-link-active">Planes de Salud</NavLink></li>
+                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesAccidentesLaborales") ActiveClass="nav-link-active">Planes para cubrir Accidentes Laborales</NavLink></li>
+                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesFunerarios") ActiveClass="nav-link-active">Planes Funerarios</NavLink></li>
+                            </ul>
+                        </div>
+                    @*     <NavLink class="nav-link" href="Servicios" ActiveClass="nav-link-active"></NavLink> *@
                     </div>
 
                     <div class="nav-item">

@@ -2,6 +2,7 @@
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
+using System.Linq;
 using VENative.Blazor.ServiceGenerator.Attributes;
 
 namespace Parsalud.BusinessLayer;
@@ -88,6 +89,9 @@ public class FaqService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
 
             if (!string.IsNullOrWhiteSpace(criteria.Answer))
                 query = query.Where(x => EF.Functions.Like(x.Answer, $"%{criteria.Answer}%"));
+
+            if (criteria.MaxCount.HasValue)
+                query = query.Take(criteria.MaxCount.Value);
 
             var entity = await query.Select(x => new ParsaludFaq
             {

@@ -16,6 +16,7 @@
     render() {
         const href = this.getAttribute("href") || "#";
         const label = this.getAttribute("label") || "Contactar";
+        const variant = this.getAttribute("variant") || "filled";
         this.shadowRoot.innerHTML = `
             <style>
                 a {
@@ -24,16 +25,21 @@
                     gap: 0.30rem;
                     align-items: center;
                     white-space: nowrap;
-                    background-color: #D124B8;
                     border-radius: 3.125rem;
                     color: #fff;
-                    padding: 0.5rem 1.5rem;
                     border: none;
+                    ${variant == 'text' ? '' : 'background-color: #D124B8'};
+                    ${variant == 'text' ? '' : 'padding: 0.5rem 1.5rem;'}
+                    ${variant == 'text' ? 'color: #9e0085;' : ''}
                 }
             </style>
             <a href="${href}">
                 ${label}
-                <button-arrow></button-arrow>
+                  ${
+                    variant == 'text' ?
+                    '<img class="more-link" src="east.svg" alt="Navegar" height="24" width="24">' :
+                    '<button-arrow></button-arrow>'
+                  }
             </a>
         `;
     }
