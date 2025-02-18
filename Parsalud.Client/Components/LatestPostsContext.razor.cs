@@ -1,19 +1,18 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Parsalud.BusinessLayer.Abstractions;
+using System.Globalization;
 
 namespace Parsalud.Client.Components;
 
-public partial class LatestPostsSection : ParsaludComponent
+public partial class LatestPostsContext : ParsaludComponent
 {
-    [Parameter]
-    [EditorRequired]
-    public required string PostSectionView { get; set; }
-
     [Parameter]
     [EditorRequired]
     public required string PostView { get; set; }
 
     private ParsaludPost[] LatestPosts { get; set; } = [];
+    private const string formato = "MMMM d, yyyy";
+    private static readonly CultureInfo cultura = new("es-ES");
 
     protected override async Task OnInitializedAsync()
     {

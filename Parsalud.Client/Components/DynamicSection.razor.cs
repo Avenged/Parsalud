@@ -59,7 +59,7 @@ public partial class DynamicSection : ComponentBase
         { nameof(PostsViewer), typeof(PostsViewer) },
         { nameof(CurrentPageTitle), typeof(CurrentPageTitle) },
         { nameof(DynamicSection), typeof(DynamicSection) },
-        { nameof(LatestPostsSection), typeof(LatestPostsSection) },
+        { nameof(LatestPostsContext), typeof(LatestPostsContext) },
         { nameof(FaqList), typeof(FaqList) }
         // Agrega más componentes aquí según los que pueden llegar desde la base de datos.
     };
