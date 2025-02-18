@@ -22,7 +22,10 @@ public class ParsaludDbContext(DbContextOptions<ParsaludDbContext> options) : Id
                .AddJsonFile("appsettings.json")
                .Build();
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlServer(connectionString);
+            optionsBuilder.UseSqlServer(connectionString, options =>
+            {
+                options.EnableRetryOnFailure(10, TimeSpan.FromSeconds(5), null);
+            });
         }
     }
 

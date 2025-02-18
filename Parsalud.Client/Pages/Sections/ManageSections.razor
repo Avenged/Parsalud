@@ -21,6 +21,19 @@
                             <RadzenTextBox @bind-Value=@Criteria.Name />
                         </RadzenFormField>
                     </RadzenColumn>
+                    <RadzenColumn SizeMD="4">
+                        <RadzenFormField class="rz-w-100" Text="Tipo de sección">
+                            <RadzenDropDown TValue="SectionKind?"
+                                            Data="SectionKind.Items"
+                                            Name=@nameof(Criteria.SectionKind)
+                                            AllowClear="true"
+                                            AllowFiltering="true"
+                                            FilterAsYouType="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            FilterOperator="StringFilterOperator.Contains"
+                                            @bind-Value=@Criteria.SectionKind />
+                        </RadzenFormField>
+                    </RadzenColumn>
                     <RadzenColumn SizeMD="12">
                         <RadzenFormField class="rz-w-100" Text="Contenido">
                             <RadzenTextBox @bind-Value=@Criteria.Content />

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Caching.Memory;
 using Parsalud.BusinessLayer.Abstractions;
 using System.Text;
+using Microsoft.AspNetCore.Components.Forms;
+using System.Collections.Generic;
 
 namespace Parsalud.Client.Components;
 
@@ -52,6 +54,9 @@ public partial class DynamicSection : ComponentBase
     private string? content;
     private readonly Dictionary<string, Type> componentMappings = new()
     {
+        { nameof(PostContext), typeof(PostContext) },
+        { nameof(AntiforgeryToken), typeof(AntiforgeryToken) },
+        { nameof(PostsViewer), typeof(PostsViewer) },
         { nameof(CurrentPageTitle), typeof(CurrentPageTitle) },
         { nameof(DynamicSection), typeof(DynamicSection) },
         { nameof(LatestPostsSection), typeof(LatestPostsSection) },
@@ -140,6 +145,31 @@ public partial class DynamicSection : ComponentBase
         if (!string.IsNullOrWhiteSpace(Param6))
             content = content.Replace("{Param6}", Param6);
 
+        // Replace placeholders with their corresponding attributes
+        if (Attributes is not null && Attributes.Count > 0)
+        {
+            List<KeyValuePair<string, object>> used = [];
+            foreach (var attribute in Attributes)
+            {
+                if (string.IsNullOrWhiteSpace(attribute.Key))
+                    continue;
+
+                var replaceable = "{" + attribute.Key + "}";
+                var exists = content.Contains(replaceable);
+                content = content.Replace(replaceable, attribute.Value.ToString());
+                if (exists)
+                {
+                    used.Add(attribute);
+                }
+            }
+
+            // Delete attributes that were meant to replace placeholders
+            foreach (var item in used)
+            {
+                Attributes.Remove(item.Key);
+            }  
+        }
+
         content = content.Replace("{Uri}", NM.Uri);
         content = content.Replace("{BaseUri}", NM.BaseUri);
 
@@ -177,6 +207,7 @@ public partial class DynamicSection : ComponentBase
             {
                 // Renderizar componente dinámico
                 builder.OpenComponent(sequence++, componentType);
+                ElementDeep++;
 
                 // Agregar atributos como parámetros
                 foreach (var attribute in node.Attributes)
@@ -187,6 +218,11 @@ public partial class DynamicSection : ComponentBase
                 if (componentType == typeof(DynamicComponent))
                 {
                     builder.AddAttribute(sequence++, nameof(ElementDeep), ElementDeep);
+                }
+
+                if (ElementDeep == 1 && ChildContent is not null)
+                {
+                    builder.AddAttribute(sequence++, "ChildContent", ChildContent);
                 }
 
                 builder.CloseComponent();
@@ -201,11 +237,27 @@ public partial class DynamicSection : ComponentBase
                 foreach (var attribute in node.Attributes)
                 {
                     var attributeValue = attribute.Value;
-                    if (ElementDeep == 1 && (Attributes?.TryGetValue(attribute.Name, out var attr) ?? false))
+                    // Combinar atributos repetidos
+                    if (ElementDeep == 1 && TryGetValue(attribute, out object? attr))
                     {
                         attributeValue += " " + attr;
                     }
                     builder.AddAttribute(sequence++, attribute.OriginalName, attributeValue);
+                }
+
+                // Agregar atributos sobrantes
+                if (ElementDeep == 1 && Attributes is not null && Attributes.Count > 0)
+                {
+                    foreach (var attribute in Attributes)
+                    {
+                        builder.AddAttribute(sequence++, attribute.Key, attribute.Value.ToString());
+                    }
+                }
+
+                // Deshabilitar mejora de navegación de Blazor
+                if (node.OriginalName.Equals("a", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    builder.AddAttribute(sequence++, "data-enhance-nav", "false");
                 }
 
                 // Renderizar hijos recursivamente
@@ -217,5 +269,16 @@ public partial class DynamicSection : ComponentBase
                 builder.CloseElement();
             }
         }
+    }
+
+    private bool TryGetValue(HtmlAttribute attribute, out object? attr)
+    {
+        attr = null;
+        var was = Attributes?.TryGetValue(attribute.Name, out attr) ?? false;
+        if (was)
+        {
+            Attributes?.Remove(attribute.Name);
+        }
+        return was;
     }
 }

@@ -163,6 +163,11 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
             if (!string.IsNullOrWhiteSpace(criteria.Content))
                 query = query.Where(x => EF.Functions.Like(x.Content, $"%{criteria.Content}%"));
 
+            if (criteria.SectionKind.HasValue && criteria.SectionKind == SectionKind.Page)
+                query = query.Where(x => !string.IsNullOrWhiteSpace(x.Page));
+            else if (criteria.SectionKind.HasValue && criteria.SectionKind == SectionKind.Component)
+                query = query.Where(x => string.IsNullOrWhiteSpace(x.Page));
+
             var entity = await query.Select(x => new ParsaludSection
             {
                 Id = x.Id,

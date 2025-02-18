@@ -1,0 +1,7 @@
+﻿@inject IPostService Service
+@inject NavigationManager NM
+
+@if (initialized)
+{
+    <DynamicSection Attributes="@attributes" Code="@View" />
+}

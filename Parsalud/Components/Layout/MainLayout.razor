@@ -13,45 +13,45 @@
                 <img src="images/logo.png" height="70" alt="Parsalud" title="Logo de Parsalud" role="img" />
                 <nav class="nav flex-row">
                     <div class="nav-item">
-                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All" ActiveClass="nav-link-active">
+                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All" ActiveClass="nav-link-active" data-enhance-nav="false">
                             <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Inicio
                         </NavLink>
                     </div>
 
                     <div class="nav-item">
-                        <NavLink class="nav-link" href="Nosotros" ActiveClass="nav-link-active">
+                        <NavLink class="nav-link" href="Nosotros" ActiveClass="nav-link-active" data-enhance-nav="false">
                             <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Nosotros
                         </NavLink>
                     </div>
 
                     <div class="nav-item">
                         <div class="dropdown">
-                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color:transparent;border:none;color:inherit;font-weight:500;padding:var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);">
+                            <NavLink class="btn btn-secondary dropdown-toggle nav-link" ActiveClass="nav-link-active" href=@($"{NM.BaseUri}Servicios") role="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color:transparent;border:none;font-weight:500;padding:var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);">
                                 Servicios
-                            </a>
+                            </NavLink>
                             <ul class="dropdown-menu">
-                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesSalud") ActiveClass="nav-link-active">Planes de Salud</NavLink></li>
-                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesAccidentesLaborales") ActiveClass="nav-link-active">Planes para cubrir Accidentes Laborales</NavLink></li>
-                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesFunerarios") ActiveClass="nav-link-active">Planes Funerarios</NavLink></li>
+                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesSalud") ActiveClass="nav-link-active" data-enhance-nav="false">Planes de Salud</NavLink></li>
+                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesAccidentesLaborales") ActiveClass="nav-link-active" data-enhance-nav="false">Planes para cubrir Accidentes Laborales</NavLink></li>
+                                <li><NavLink class="dropdown-item nav-link" href=@($"{NM.BaseUri}Servicios/PlanesFunerarios") ActiveClass="nav-link-active" data-enhance-nav="false">Planes Funerarios</NavLink></li>
                             </ul>
                         </div>
-                    @*     <NavLink class="nav-link" href="Servicios" ActiveClass="nav-link-active"></NavLink> *@
+                        @*     <NavLink class="nav-link" href="Servicios" ActiveClass="nav-link-active"></NavLink> *@
                     </div>
 
                     <div class="nav-item">
-                        <NavLink class="nav-link" href="Herramientas" ActiveClass="nav-link-active">
+                        <NavLink class="nav-link" href="HerramientasEnLinea" ActiveClass="nav-link-active" data-enhance-nav="false">
                             <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Herramientas en línea
                         </NavLink>
                     </div>
 
                     <div class="nav-item">
-                        <NavLink class="nav-link" href="Publicaciones" ActiveClass="nav-link-active">
+                        <NavLink class="nav-link" href="Publicaciones" ActiveClass="nav-link-active" data-enhance-nav="false">
                             <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Publicaciones
                         </NavLink>
                     </div>
 
                     <div class="nav-item">
-                        <NavLink class="nav-link" href="Contacto" ActiveClass="nav-link-active">
+                        <NavLink class="nav-link" href="Contacto" ActiveClass="nav-link-active" data-enhance-nav="false">
                             <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Contacto
                         </NavLink>
                     </div>

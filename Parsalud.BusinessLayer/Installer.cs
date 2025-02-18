@@ -13,7 +13,10 @@ public static class Installer
         services.AddDbContextFactory<ParsaludDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            options.UseSqlServer(connectionString);
+            options.UseSqlServer(connectionString, options =>
+            {
+                options.EnableRetryOnFailure(10, TimeSpan.FromSeconds(5), null);
+            });
         });
 
         services.AddTransient<IStyleSheetService, StyleSheetService>();

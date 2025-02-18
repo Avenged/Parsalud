@@ -11,6 +11,7 @@ using Parsalud.BusinessLayer.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddRadzenComponents();
 
 builder.Services.AddMemoryCache();

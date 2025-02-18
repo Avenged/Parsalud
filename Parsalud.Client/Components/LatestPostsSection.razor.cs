@@ -1,9 +1,18 @@
-﻿using Parsalud.BusinessLayer.Abstractions;
+﻿using Microsoft.AspNetCore.Components;
+using Parsalud.BusinessLayer.Abstractions;
 
 namespace Parsalud.Client.Components;
 
 public partial class LatestPostsSection : ParsaludComponent
 {
+    [Parameter]
+    [EditorRequired]
+    public required string PostSectionView { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required string PostView { get; set; }
+
     private ParsaludPost[] LatestPosts { get; set; } = [];
 
     protected override async Task OnInitializedAsync()

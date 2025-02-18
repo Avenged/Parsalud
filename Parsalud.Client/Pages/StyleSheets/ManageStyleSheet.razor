@@ -10,7 +10,7 @@
 <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nueva", "Editar", "Ver") hoja de estilo</RadzenText>
 
 <RadzenCard>
-    <RadzenTemplateForm TItem="StyleSheetModel" Data="Model" Submit="Submit">
+    <RadzenTemplateForm @ref="Form" TItem="StyleSheetModel" Data="Model" Submit="Submit">
         <RadzenStack>
             <RadzenRow>
                 <RadzenColumn SizeMD="12">
@@ -22,7 +22,11 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn SizeMD="12">
-                    <RadzenTextArea class="w-100" Name=@nameof(Model.Content) Disabled=@ReadOnly Style="min-height:400px" Placeholder="Escribe aquí el CSS" @bind-Value=@Model.Content />
+                    <MonacoEditor id="cssEditor"
+                                  Name=@nameof(Model.Content)
+                                  Language="css"
+                                  ReadOnly="@ReadOnly"
+                                  @bind-Value=@Model.Content />
                     <RadzenRequiredValidator Component=@nameof(Model.Content) Text="El contenido de la hoja de estilo no debe estar vacío" />
                 </RadzenColumn>
             </RadzenRow>
@@ -36,3 +40,10 @@
         </RadzenStack>
     </RadzenTemplateForm>
 </RadzenCard>
+
+<style type="text/css">
+    #cssEditor
+    {
+        height: 80vh;
+    }
+</style>

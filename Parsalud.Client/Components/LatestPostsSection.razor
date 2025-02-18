@@ -1,5 +1,6 @@
 ﻿@inject IPostService PostService
 @inherits ParsaludComponent
+@attribute [StreamRendering]
 
 <section @attributes=@Attributes class="@GetCssClass()">
     <h3 class="latest-posts__title" title="Últimas publicaciones de Parsalud">Últimas publicaciones</h3>
@@ -14,3 +15,5 @@
         }
     </div>
 </section>
+
+<DynamicSection Code="" />

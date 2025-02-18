@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Parsalud.BusinessLayer.Abstractions;
+using System.Collections;
 
 namespace Parsalud.Client.Pages.Sections;
 

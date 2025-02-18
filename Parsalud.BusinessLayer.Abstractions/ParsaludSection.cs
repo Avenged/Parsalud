@@ -1,4 +1,7 @@
-﻿namespace Parsalud.BusinessLayer.Abstractions;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace Parsalud.BusinessLayer.Abstractions;
 
 public class ParsaludSection
 {
@@ -15,4 +18,8 @@ public class ParsaludSection
     public required string? Param4 { get; init; }
     public required string? Param5 { get; init; }
     public required string? Param6 { get; init; }
+
+    [JsonIgnore]
+    [NotMapped]
+    public SectionKind SectionKind { get => string.IsNullOrWhiteSpace(Page) ? SectionKind.Component : SectionKind.Page; }
 }

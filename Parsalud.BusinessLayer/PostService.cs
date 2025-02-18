@@ -2,6 +2,7 @@
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
+using System.Linq;
 using VENative.Blazor.ServiceGenerator.Attributes;
 
 namespace Parsalud.BusinessLayer;
@@ -81,17 +82,43 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
         }
     }
 
-    public async Task<BusinessResponse<ParsaludPost[]>> GetByCriteriaAsync(PostSearchCriteria criteria, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<Paginated<ParsaludPost[]>>> GetByCriteriaAsync(PostSearchCriteria criteria, CancellationToken cancellationToken = default)
     {
         try
         {
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
             var query = dbContext.Posts.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(criteria.Title))
-                query = query.Where(x => EF.Functions.Like(x.Title, $"%{criteria.Title}%"));
+            if (criteria.Ids?.Length > 0)
+                query = query.Where(x => criteria.Ids.Contains(x.Id));
 
-            var entity = await query.Select(x => new ParsaludPost
+            if (!string.IsNullOrWhiteSpace(criteria.Title))
+                query = query.Where(x => EF.Functions.Like(x.Title, $"%{criteria.Title}%") || EF.Functions.Like(x.Content, $"%{criteria.Content}%"));
+
+            if (criteria.CategoryIds?.Length > 0)
+            {
+                var cc = criteria.CategoryIds;
+                query = query.Where(x => cc.Contains(x.PostCategoryId));
+            }
+
+            query = query.Where(x => !x.Deleted);
+
+            int totalItems = 0;
+            if (criteria.Page.HasValue && criteria.Size.HasValue)
+            {
+                totalItems = await query.CountAsync(cancellationToken);
+            }
+
+            if (criteria.Page.HasValue)
+            {
+                var size = criteria.Size.GetValueOrDefault(1);
+                query = query.Skip(criteria.Page.Value * size);
+            }
+
+            if (criteria.Size.HasValue)
+                query = query.Take(criteria.Size.Value);
+
+            var entities = await query.Select(x => new ParsaludPost
             {
                 Id = x.Id,
                 Content = x.Content,
@@ -101,13 +128,26 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
                 PostCategoryId = x.PostCategoryId,
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
-            }).ToArrayAsync(cancellationToken);
+            })
+                .OrderByDescending(x => x.CreatedAt)
+                .ToArrayAsync(cancellationToken);
 
-            return BusinessResponse.Success(entity);
+            if (!criteria.Page.HasValue && !criteria.Size.HasValue)
+            {
+                totalItems = entities.Length;
+            }
+
+            return BusinessResponse.Success(new Paginated<ParsaludPost[]>
+            {
+                Data = entities,
+                Page = criteria.Page,
+                PageSize = criteria.Size,
+                TotalItems = totalItems
+            });
         }
         catch
         {
-            return BusinessResponse.Error<ParsaludPost[]>("Ocurrió un error inesperado");
+            return BusinessResponse.Error<Paginated<ParsaludPost[]>>("Ocurrió un error inesperado");
         }
     }
 
@@ -116,9 +156,9 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
         try
         {
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
-            
+
             var query = dbContext.Posts.Take(4)
-                .OrderByDescending(x => x.CreatedById);
+                .OrderByDescending(x => x.CreatedAt);
 
             var entity = await query.Select(x => new ParsaludPost
             {
