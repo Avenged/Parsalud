@@ -1,6 +1,7 @@
 ﻿@page "/Dashboard/Section/Create"
 @page "/Dashboard/Section/{Id:guid}/Update"
 @page "/Dashboard/Section/{Id:guid}/View"
+@attribute [Authorize(Roles = "admin")]
 
 @inject IStyleSheetService StyleSheetService
 

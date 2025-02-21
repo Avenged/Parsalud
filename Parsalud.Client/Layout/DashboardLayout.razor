@@ -53,10 +53,17 @@
             <RadzenPanelMenuItem Text="Administrar FAQs" Icon="psychology_alt" Path="Dashboard/Faqs" />
             <RadzenPanelMenuItem Text="Administrar categorías" Icon="category" Path="Dashboard/PostCategories" />
             <RadzenPanelMenuItem Text="Administrar archivos" Icon="home_storage" Path="Dashboard/Files" />
-            <RadzenPanelMenuItem Text="Avanzado" Icon="admin_panel_settings">
-                <RadzenPanelMenuItem Text="Administrar secciones" Icon="stack_hexagon" Path="Dashboard/Sections" />
-                <RadzenPanelMenuItem Text="Administrar hojas de estilo" Icon="style" Path="Dashboard/StyleSheets" />
-            </RadzenPanelMenuItem>
+            <AuthorizeView Roles="admin">
+                <Authorized>
+                    <RadzenPanelMenuItem Text="Avanzado" Icon="admin_panel_settings">
+                        <RadzenPanelMenuItem Text="Administrar secciones" Icon="stack_hexagon" Path="Dashboard/Sections" />
+                        <RadzenPanelMenuItem Text="Administrar hojas de estilo" Icon="style" Path="Dashboard/StyleSheets" />
+                    </RadzenPanelMenuItem>
+                    <RadzenPanelMenuItem Text="Seguridad" Icon="lock">
+                        <RadzenPanelMenuItem Text="Administrar usuarios" Icon="group" Path="Dashboard/Users" />
+                    </RadzenPanelMenuItem>
+                </Authorized>
+            </AuthorizeView>
         </RadzenPanelMenu>
     </RadzenSidebar>
     <PageStack>

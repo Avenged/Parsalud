@@ -6,6 +6,9 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using Parsalud.DataAccess.Models
+@using System.Security.Claims
+
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 @inject UserManager<ParsaludUser> UserManager
 @inject IUserStore<ParsaludUser> UserStore
@@ -44,7 +47,12 @@
                 <label for="Input.ConfirmPassword">Confirmar contraseña</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Registrarse</button>
+            <div class="mb-4">
+                <InputCheckbox @bind-Value="Input.IsAdmin" id="Input.IsAdmin" aria-required="true" />
+                <label for="Input.IsAdmin">Es administrador</label>
+                <ValidationMessage For="() => Input.IsAdmin" class="text-danger" />
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Registrar</button>
         </EditForm>
     </div>
 @*     <div class="col-lg-4 col-lg-offset-2">
@@ -93,6 +101,15 @@
 
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
+        if (Input.IsAdmin)
+        {
+            var claimResult = await UserManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "admin"));
+            if (!claimResult.Succeeded)
+            {
+                Logger.LogError("Error adding admin claim: {Errors}", string.Join(", ", claimResult.Errors.Select(e => e.Description)));
+            }
+        }
+
         if (UserManager.Options.SignIn.RequireConfirmedAccount)
         {
             RedirectManager.RedirectTo(
@@ -100,7 +117,7 @@
                 queryParameters: new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
         }
 
-        await SignInManager.SignInAsync(user, isPersistent: false);
+        //await SignInManager.SignInAsync(user, isPersistent: false);
         RedirectManager.RedirectTo(ReturnUrl);
     }
 
@@ -143,5 +160,8 @@
         [Display(Name = "Confirmar contraseña")]
         [Compare("Password", ErrorMessage = "La contraseña y la contraseña de confirmación no coinciden.")]
         public string ConfirmPassword { get; set; } = "";
+
+        [Display(Name = "Es administrador")]
+        public bool IsAdmin { get; set; } = false;
     }
 }

@@ -43,13 +43,13 @@
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Ingresar</button>
                 </div>
                 <div class="py-2">
-              @*       <p>
+              @*<p>
                         <a href="Account/ForgotPassword">Forgot your password?</a>
-                    </p> *@
-                    <p>
+                    </p> 
+                     <p>
                         <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Registrarse como nuevo usuario</a>
-                    </p>
-               @*      <p>
+                    </p> 
+                    <p>
                         <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
                     </p> *@
                 </div>

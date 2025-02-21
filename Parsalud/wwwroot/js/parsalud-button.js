@@ -6,7 +6,7 @@
     }
 
     static get observedAttributes() {
-        return ["href", "label"];
+        return ["href", "label", "target"];
     }
 
     attributeChangedCallback() {
@@ -15,6 +15,7 @@
 
     render() {
         const href = this.getAttribute("href") || "#";
+        const target = this.getAttribute("target") || "_self";
         const label = this.getAttribute("label") || "Contactar";
         const variant = this.getAttribute("variant") || "filled";
         this.shadowRoot.innerHTML = `
@@ -33,7 +34,7 @@
                     ${variant == 'text' ? 'color: #9e0085;' : ''}
                 }
             </style>
-            <a href="${href}">
+            <a href="${href}" target="${target}">
                 ${label}
                   ${
                     variant == 'text' ?

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using Parsalud.BusinessLayer;
 using Parsalud.DataAccess.Models;
 using Parsalud.DataAccess;
 using Microsoft.AspNetCore.Identity;
@@ -18,10 +17,15 @@ public static class SecurityExtensions
         services.AddIdentityCore<ParsaludUser>(options =>
         {
             options.SignIn.RequireConfirmedAccount = false;
+
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequireUppercase = false;
             options.Password.RequireLowercase = false;
             options.Password.RequireDigit = false;
+
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.AllowedForNewUsers = true;
         })
             .AddErrorDescriber<CustomIdentityErrorDescriber>()
             .AddEntityFrameworkStores<ParsaludDbContext>()

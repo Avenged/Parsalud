@@ -145,7 +145,7 @@ app.MapPost("/contactme", async (
         await smtp.SendAsync(email);
         await smtp.DisconnectAsync(true);
 
-        return Results.LocalRedirect("~/Contacto/Success");
+        return Results.LocalRedirect("~/dr/Contacto/Success");
     }
     catch (Exception ex)
     {

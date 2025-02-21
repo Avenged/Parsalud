@@ -1,4 +1,6 @@
 ﻿@page "/Dashboard/Sections"
+@attribute [Authorize(Roles = "admin")]
+
 @inherits ManagerBase<ISectionService, ParsaludSection, ManageSectionRequest, SectionSearchCriteria>
 
 <PageTitle>Secciones - Dashboard Parsalud</PageTitle>

@@ -1,5 +1,6 @@
 ﻿@page "/Dashboard/StyleSheets"
 @inherits ManagerBase<IStyleSheetService, ParsaludStyleSheet, ManageStyleSheetRequest, StyleSheetSearchCriteria>
+@attribute [Authorize(Roles = "admin")]
 
 <PageTitle>Hojas de estilo - Dashboard Parsalud</PageTitle>
 
