@@ -33,11 +33,6 @@ if (OperatingSystem.IsWindows())
 }
 
 builder.Services.AddControllers();
-builder.Services.AddSingleton<IParsaludWebHostEnvironment>(x =>
-{
-    var env = x.GetRequiredService<IWebHostEnvironment>();
-    return new ParsaludWebHostEnvironment(env.WebRootPath);
-});
 builder.Services.AddRadzenComponents();
 builder.Services.AddFusionCache().WithDefaultEntryOptions(options =>
 {
@@ -61,6 +56,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<IEmailSender<ParsaludUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
+
+app.UsePathBase(configuration.GetValue<string>("Base"));
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
