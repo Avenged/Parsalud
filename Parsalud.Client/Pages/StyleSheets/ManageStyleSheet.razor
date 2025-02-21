@@ -7,9 +7,9 @@
 @inherits BaseAbm<Guid>
 
 <PageTitle>@Action("Nueva", "Editar", "Ver") hoja de estilo - Dashboard Parsalud</PageTitle>
-<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nueva", "Editar", "Ver") hoja de estilo</RadzenText>
 
 <RadzenCard>
+    <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nueva", "Editar", "Ver") hoja de estilo</RadzenText>
     <RadzenTemplateForm @ref="Form" TItem="StyleSheetModel" Data="Model" Submit="Submit">
         <RadzenStack>
             <RadzenRow>
@@ -44,6 +44,6 @@
 <style type="text/css">
     #cssEditor
     {
-        height: 80vh;
+        height: 50vh;
     }
 </style>

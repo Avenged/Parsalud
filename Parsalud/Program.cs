@@ -8,16 +8,22 @@ using Parsalud.DataAccess.Models;
 using Parsalud.Components.Account;
 using Microsoft.AspNetCore.Mvc;
 using Parsalud.BusinessLayer.Abstractions;
+using Microsoft.AspNetCore.Antiforgery;
+using Humanizer;
+using ZiggyCreatures.Caching.Fusion;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddRadzenComponents();
-
+builder.Services.AddFusionCache().WithDefaultEntryOptions(options =>
+{
+    options.Duration = TimeSpan.MaxValue;
+});
 builder.Services.AddMemoryCache();
 builder.Services.AddBusinessLayer(builder.Configuration);
 builder.Services.AddSecurity();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddAntiforgery();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -47,6 +53,66 @@ else
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
+
+app.MapPost("/contactme", async (
+    HttpContext context,
+    [FromForm] IFormCollection form, 
+    IAntiforgery antiforgery) =>
+{
+    if (!string.IsNullOrWhiteSpace(form["__RequestVerificationToken"]))
+    {
+        context.Request.Headers.TryAdd("X-CSRF-TOKEN", form["__RequestVerificationToken"]);
+        if (!antiforgery.IsRequestValidAsync(context).Result)
+        {
+            return Results.BadRequest("Token CSRF inválido");
+        }
+    }
+    else
+    {
+        return Results.BadRequest("Token CSRF inválido");
+    }
+
+    string? givenName = form["given-name"].FirstOrDefault()?.Truncate(100);
+    string? familyName = form["family-name"].FirstOrDefault()?.Truncate(100);
+    string? tel = form["tel"].FirstOrDefault()?.Truncate(20);
+    string? mail = form["email"].FirstOrDefault()?.Truncate(50);
+    string? comments = form["comments"].FirstOrDefault()?.Truncate(500);
+
+    try
+    {
+        //MimeMessage email = new();
+        //email.From.Add(new MailboxAddress("Parsalud", "notificaciones@tuempresa.com"));
+        //email.To.Add(new MailboxAddress("Asesor", "asesor@tuempresa.com"));
+        //email.Subject = "Nuevo Contacto de Cliente";
+
+        //email.Body = new TextPart("plain")
+        //{
+        //    Text = 
+        //    $"""
+        //    Nuevo cliente ha enviado un formulario:
+
+        //    - Nombre: {givenName} {familyName}
+        //    - Teléfono: {tel}
+        //    - Email: {mail}
+        //    - Comentarios: {comments}
+
+        //    Contactar lo antes posible.
+        //    """
+        //};
+
+        //using var smtp = new SmtpClient();
+        //await smtp.ConnectAsync("smtp.tudominio.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+        //await smtp.AuthenticateAsync("notificaciones@tuempresa.com", "tucontraseña");
+        //await smtp.SendAsync(email);
+        //await smtp.DisconnectAsync(true);
+
+        return Results.LocalRedirect("~/Contacto/Success");
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem("Error al enviar el correo: " + ex.Message);
+    }
+});
 
 app.MapGeneratedHubs(useAuthorization: true, typeof(Parsalud.BusinessLayer.IAssemblyMarker).Assembly);
 app.MapStaticAssets();

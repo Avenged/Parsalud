@@ -2,62 +2,61 @@
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Parsalud.BusinessLayer.Abstractions;
-using System;
 using System.Globalization;
 using System.Text;
 
 namespace Parsalud.Client.Components;
 
-public partial class PostsViewer : ComponentBase
+public partial class PostsByQueryContext : ComponentBase
 {
+    [Parameter]
+    public string? View { get; set; }
+
+    [Parameter]
+    public string? NotFoundView { get; set; }
+
+    [Parameter]
+    public string ShowPaginator { get; set; } = "True";
+
+    [Parameter]
+    public string? MaxCount { get; set; }
+
+    [Parameter]
+    public string? LoadingView { get; set; }
+
+    private bool ShowPaginatorBool
+    {
+        get
+        {
+            if (bool.TryParse(ShowPaginator, out var sp))
+            {
+                return sp;
+            }
+            return true;
+        }
+    }
+
     public Paginated<ParsaludPost[]>? Posts { get; set; }
-    public ParsaludPost[]? LatestPosts { get; set; }
-    public ParsaludPostCategory[]? Categories { get; set; }
 
     private int currentPageNumber = 1;
     private Dictionary<string, StringValues>? query;
     private const string formato = "MMMM d, yyyy";
-    private static readonly CultureInfo cultura = new CultureInfo("es-ES");
+    private static readonly CultureInfo cultura = new("es-ES");
 
     protected override async Task OnInitializedAsync()
     {
         PostSearchCriteria criteria = GetCurrentCriteria();
         await GetPostsByCriteria(criteria);
-        await GetCategories();
-        await GetLatestPosts();
-    }
-
-    private bool IsChecked(Guid id)
-    {
-        Uri uri = new(NM.Uri);
-        query ??= QueryHelpers.ParseQuery(uri.Query);
-
-        if (query.TryGetValue("c", out var values))
-        {
-            var culture = StringComparison.InvariantCultureIgnoreCase;
-            return values.Any(x => x?.Equals(id.ToString(), culture) ?? false);
-        }
-        return false;
-    }
-
-    private string? GetInputTextValue()
-    {
-        Uri uri = new(NM.Uri);
-        query ??= QueryHelpers.ParseQuery(uri.Query);
-
-        if (query.TryGetValue("s", out var value))
-        {
-            return value;
-        }
-        return null;
     }
 
     private PostSearchCriteria GetCurrentCriteria()
     {
+        var validInt = int.TryParse(MaxCount, out int maxCount);
+
         PostSearchCriteria criteria = new()
         {
             Page = 0,
-            Size = 4,
+            Size = validInt ? maxCount : 4,
         };
 
         Uri uri = new(NM.Uri);
@@ -67,6 +66,17 @@ public partial class PostsViewer : ComponentBase
         {
             switch (param.Key)
             {
+                case "id":
+                    List<Guid> excludedIds = [];
+                    foreach (var c in param.Value)
+                    {
+                        if (Guid.TryParse(c, out var id))
+                        {
+                            excludedIds.Add(id);
+                        }
+                    }
+                    criteria.ExcludedIds = [.. excludedIds];
+                    break;
                 case "s":
                     criteria.Title = param.Value[0];
                     criteria.Content = param.Value[0];
@@ -114,32 +124,6 @@ public partial class PostsViewer : ComponentBase
                 PageSize = null,
                 TotalItems = 0
             };
-        }
-    }
-
-    private async Task GetCategories()
-    {
-        var response = await PostCategoryService.GetByCriteriaAsync(new PostCategorySearchCriteria());
-        if (response.IsSuccessWithData)
-        {
-            Categories = response.Data;
-        }
-        else
-        {
-            Categories = [];
-        }
-    }
-
-    private async Task GetLatestPosts()
-    {
-        var response = await PostService.GetLatestAsync();
-        if (response.IsSuccessWithData)
-        {
-            LatestPosts = response.Data;
-        }
-        else
-        {
-            LatestPosts = [];
         }
     }
 

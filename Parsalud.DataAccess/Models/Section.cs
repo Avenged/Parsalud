@@ -17,4 +17,9 @@ public class Section : DeletableAuditableEntityBase
     public string? Param6 { get; set; }
 
     public virtual StyleSheet? StyleSheet { get; set; }
+
+    public override string ToString()
+    {
+        return Code + " - " + Name + " - " + Id + " - ";
+    }
 }

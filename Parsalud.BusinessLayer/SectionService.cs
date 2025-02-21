@@ -4,17 +4,22 @@ using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
 using VENative.Blazor.ServiceGenerator.Attributes;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace Parsalud.BusinessLayer;
 
 [GenerateHub]
-public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
+public class SectionService(
+    IDbContextFactory<ParsaludDbContext> dbContextFactory,
     IUserService userService,
+    IFusionCache cache,
     IMemoryCache memoryCache) : ISectionService
 {
-    private readonly IDbContextFactory<ParsaludDbContext> dbContextFactory = dbContextFactory;
-    private readonly IUserService userService = userService;
-    private readonly IMemoryCache memoryCache = memoryCache;
+    private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
+    private readonly IUserService _userService = userService;
+    private readonly IFusionCache _cache = cache;
+    private readonly IMemoryCache _memoryCache = memoryCache;
+    private static readonly StringComparison comp = StringComparison.CurrentCultureIgnoreCase;
 
     private static string? ConvertEmptyToNull(string? value)
     {
@@ -27,9 +32,10 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var exists = await dbContext.Sections.AnyAsync(x => x.Code.ToUpper() == request.Code.ToUpper(), cancellationToken);
+            var sections = await GetSectionsAsync(cancellationToken);
+            var exists = sections.Any(x => x.Code.Equals(request.Code, comp));
 
             if (exists)
             {
@@ -52,12 +58,13 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                 Param5 = ConvertEmptyToNull(request.Param5),
                 Param6 = ConvertEmptyToNull(request.Param6),
                 CreatedAt = DateTime.Now,
-                CreatedById = userService.Id,
+                CreatedById = _userService.Id,
             };
 
             dbContext.Add(entity);
-
             await dbContext.SaveChangesAsync(cancellationToken);
+
+            await _cache.RemoveByTagAsync(CacheTags.Section, token: cancellationToken);
             return BusinessResponse.Success(EntityToDTO(entity));
         }
         catch (Exception)
@@ -70,16 +77,17 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var exists = await dbContext.Sections.AnyAsync(x => x.Code.ToUpper() == request.Code.ToUpper() && x.Id != id, cancellationToken);
+            var sections = await GetSectionsAsync(cancellationToken);
+            var exists = sections.Any(x => x.Code.Equals(request.Code, comp) && x.Id != id);
 
             if (exists)
             {
                 return BusinessResponse.Error<ParsaludSection>("Ya existe una sección con el mismo código");
             }
 
-            var entity = await dbContext.Sections.FirstAsync(x => x.Id == id, cancellationToken);
+            var entity = sections.First(x => x.Id == id && !x.Deleted);
 
             entity.Code = request.Code;
             entity.Name = request.Name;
@@ -94,9 +102,12 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
             entity.Param5 = ConvertEmptyToNull(request.Param5);
             entity.Param6 = ConvertEmptyToNull(request.Param6);
             entity.UpdatedAt = DateTime.Now;
-            entity.UpatedById = userService.Id;
+            entity.UpatedById = _userService.Id;
 
+            dbContext.Update(entity);
             await dbContext.SaveChangesAsync(cancellationToken);
+
+            await _cache.RemoveByTagAsync(CacheTags.Section, token: cancellationToken);
             return BusinessResponse.Success(EntityToDTO(entity));
         }
         catch (Exception)
@@ -105,18 +116,39 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
         }
     }
 
-    public Task<BusinessResponse> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            var sections = await GetSectionsAsync(cancellationToken);
+            var entity = sections.First(x => x.Id == id && !x.Deleted);
+
+            entity.Deleted = true;
+            entity.UpdatedAt = DateTime.Now;
+            entity.UpatedById = _userService.Id;
+
+            dbContext.Update(entity);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            await _cache.RemoveByTagAsync(CacheTags.Section, token: cancellationToken);
+            return BusinessResponse.Success(EntityToDTO(entity));
+        }
+        catch (Exception)
+        {
+            return BusinessResponse.Error<ParsaludSection>("Ocurrió un error inesperado");
+        }
     }
 
     public async Task<BusinessResponse<ParsaludSection>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var entity = await dbContext.Sections.Where(x => x.Id == id)
+            var sections = await GetSectionsAsync(cancellationToken);
+            var entity = sections.Where(x => x.Id == id && !x.Deleted)
                 .Select(x => new ParsaludSection
                 {
                     Id = x.Id,
@@ -132,7 +164,7 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                     Param4 = x.Param4,
                     Param5 = x.Param5,
                     Param6 = x.Param6,
-                }).FirstOrDefaultAsync(cancellationToken);
+                }).FirstOrDefault();
 
             if (entity is null)
             {
@@ -147,28 +179,30 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
         }
     }
 
-    public async Task<BusinessResponse<ParsaludSection[]>> GetByCriteriaAsync(SectionSearchCriteria criteria, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<Paginated<ParsaludSection[]>>> GetByCriteriaAsync(SectionSearchCriteria criteria, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
-            var query = dbContext.Sections.AsQueryable();
+            var sections = await GetSectionsAsync(cancellationToken);
+            var query = sections.AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(criteria.Name))
-                query = query.Where(x => EF.Functions.Like(x.Name, $"%{criteria.Name}%"));
+                query = query.Where(x => x.Name.Contains(criteria.Name, comp));
 
             if (!string.IsNullOrWhiteSpace(criteria.Code))
-                query = query.Where(x => EF.Functions.Like(x.Code, $"%{criteria.Code}%"));
+                query = query.Where(x => x.Code.Contains(criteria.Code, comp));
 
             if (!string.IsNullOrWhiteSpace(criteria.Content))
-                query = query.Where(x => EF.Functions.Like(x.Content, $"%{criteria.Content}%"));
+                query = query.Where(x => x.Content.Contains(criteria.Content, comp));
 
             if (criteria.SectionKind.HasValue && criteria.SectionKind == SectionKind.Page)
                 query = query.Where(x => !string.IsNullOrWhiteSpace(x.Page));
             else if (criteria.SectionKind.HasValue && criteria.SectionKind == SectionKind.Component)
                 query = query.Where(x => string.IsNullOrWhiteSpace(x.Page));
 
-            var entity = await query.Select(x => new ParsaludSection
+            query = query.Where(x => !x.Deleted);
+
+            var entities = query.Select(x => new ParsaludSection
             {
                 Id = x.Id,
                 Content = x.Content,
@@ -183,13 +217,19 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                 Param4 = x.Param4,
                 Param5 = x.Param5,
                 Param6 = x.Param6,
-            }).ToArrayAsync(cancellationToken);
+            }).ToArray();
 
-            return BusinessResponse.Success(entity);
+            return BusinessResponse.Success(new Paginated<ParsaludSection[]>
+            {
+                Data = entities,
+                Page = 0,
+                PageSize = entities.Length,
+                TotalItems = entities.Length
+            });
         }
         catch
         {
-            return BusinessResponse.Error<ParsaludSection[]>("Ocurrió un error inesperado");
+            return BusinessResponse.Error<Paginated<ParsaludSection[]>>("Ocurrió un error inesperado");
         }
     }
 
@@ -205,44 +245,45 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
             var codeUpper = code.ToUpper();
 
-            var query = dbContext.Sections.Where(x => 
-                (!string.IsNullOrWhiteSpace(x.Page) && x.Page.ToUpper() == codeUpper) ||
-                x.Code.ToUpper() == codeUpper);
+            var sections = await GetSectionsAsync(cancellationToken);
+            var query = sections.Where(x => !x.Deleted &&
+                (!string.IsNullOrWhiteSpace(x.Page) &&
+                x.Page.Equals(codeUpper, comp)) ||
+                x.Code.Equals(codeUpper, comp));
 
             if (!string.IsNullOrWhiteSpace(param1))
-                query = query.Where(x => x.Param1!.ToUpper() == param1.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => (x.Param1 ?? "").Equals(param1, comp) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param1 == null);
 
             if (!string.IsNullOrWhiteSpace(param2))
-                query = query.Where(x => x.Param2!.ToUpper() == param2.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => (x.Param2 ?? "").Equals(param2, comp) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param2 == null);
 
             if (!string.IsNullOrWhiteSpace(param3))
-                query = query.Where(x => x.Param3!.ToUpper() == param3.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => (x.Param3 ?? "").Equals(param3, comp) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param3 == null);
 
             if (!string.IsNullOrWhiteSpace(param4))
-                query = query.Where(x => x.Param4!.ToUpper() == param4.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => (x.Param4 ?? "").Equals(param4, comp) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param4 == null);
 
             if (!string.IsNullOrWhiteSpace(param5))
-                query = query.Where(x => x.Param5!.ToUpper() == param5.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => (x.Param5 ?? "").Equals(param5, comp) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param5 == null);
 
             if (!string.IsNullOrWhiteSpace(param6))
-                query = query.Where(x => x.Param6!.ToUpper() == param6.ToUpper() || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => (x.Param6 ?? "").Equals(param6, comp) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param6 == null);
 
-            var entity = await query.Select(x => new ParsaludSection
+            var entity = query.Select(x => new ParsaludSection()
             {
                 Id = x.Id,
                 Content = x.Content,
@@ -257,7 +298,7 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                 Param4 = x.Param4,
                 Param5 = x.Param5,
                 Param6 = x.Param6,
-            }).FirstOrDefaultAsync(cancellationToken);
+            }).FirstOrDefault();
 
             if (entity is null)
             {
@@ -294,7 +335,7 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
 
     public async Task UpdateLiveServerAsync(LiveServerInstance ins, CancellationToken cancellationToken = default)
     {
-        var instance = memoryCache.GetOrCreate($"LiveServer-{ins.Id}", entry =>
+        var instance = _memoryCache.GetOrCreate($"LiveServer-{ins.Id}", entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(10);
             return new LiveServerInstance()
@@ -304,11 +345,25 @@ public class SectionService(IDbContextFactory<ParsaludDbContext> dbContextFactor
                 Css = ins.Css,
             };
         });
+
         instance!.Id = ins.Id;
         instance!.Html = ins.Html;
         instance!.Css = ins.Css;
         instance!.I++;
 
         await Task.CompletedTask;
+    }
+
+    private async Task<List<Section>> GetSectionsAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _cache.GetOrSetAsync("sections", async token =>
+        {
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(token);
+            var section = await dbContext.Sections.Where(x => !x.Deleted)
+                .ToListAsync(token);
+            return section;
+        }, tags: [CacheTags.Section], token: cancellationToken);
+
+        return entities;
     }
 }

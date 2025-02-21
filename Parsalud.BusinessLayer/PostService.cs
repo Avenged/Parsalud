@@ -1,24 +1,28 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Core;
+using Microsoft.EntityFrameworkCore;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
-using System.Linq;
 using VENative.Blazor.ServiceGenerator.Attributes;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace Parsalud.BusinessLayer;
 
 [GenerateHub]
-public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
-    IUserService userService) : IPostService
+public class PostService(
+    IDbContextFactory<ParsaludDbContext> dbContextFactory,
+    IUserService userService,
+    IFusionCache cache) : IPostService
 {
-    private readonly IDbContextFactory<ParsaludDbContext> dbContextFactory = dbContextFactory;
-    private readonly IUserService userService = userService;
+    private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
+    private readonly IUserService _userService = userService;
+    private readonly IFusionCache _cache = cache;
 
     public async Task<BusinessResponse> CreateAsync(ManagePostRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             dbContext.Add(new Post
             {
@@ -26,9 +30,10 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
                 Title = request.Title,
                 Content = request.Content,
                 Hidden = request.Hidden,
+                ImgSrc = request.ImgSrc,
                 PostCategoryId = request.PostCategoryId,
                 CreatedAt = DateTime.Now,
-                CreatedById = userService.Id,
+                CreatedById = _userService.Id,
             });
 
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -40,34 +45,76 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
         }
     }
 
-    public Task<BusinessResponse> UpdateAsync(Guid id, ManagePostRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse> UpdateAsync(Guid id, ManagePostRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            var post = await dbContext.Posts.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
+
+            post.Title = request.Title;
+            post.Content = request.Content;
+            post.ImgSrc = request.ImgSrc;
+            post.Hidden = request.Hidden;
+            post.PostCategoryId = request.PostCategoryId;
+            post.UpdatedAt = DateTime.Now;
+            post.UpatedById = _userService.Id;
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return BusinessResponse.Success();
+        }
+        catch (Exception)
+        {
+            return BusinessResponse.Error("Ocurrió un error inesperado");
+        }
     }
 
-    public Task<BusinessResponse> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            var post = await dbContext.Posts.FirstAsync(x => x.Id == id, cancellationToken);
+
+            post.Deleted = true;
+            post.UpdatedAt = DateTime.Now;
+            post.UpatedById = _userService.Id;
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return BusinessResponse.Success();
+        }
+        catch (Exception)
+        {
+            return BusinessResponse.Error("Ocurrió un error inesperado");
+        }
     }
 
     public async Task<BusinessResponse<ParsaludPost>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            var entity = await _cache.GetOrSetAsync($"post|{id}", async token =>
+            {
+                await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var entity = await dbContext.Posts.Where(x => x.Id == id)
-                .Select(x => new ParsaludPost
-                {
-                    Id = x.Id,
-                    Content = x.Content,
-                    Title = x.Title,
-                    PostCategory = x.PostCategory.Name,
-                    Hidden = x.Hidden,
-                    PostCategoryId = x.PostCategoryId,
-                    CreatedAt = x.CreatedAt,
-                    UpdatedAt = x.UpdatedAt,
-                }).FirstOrDefaultAsync(cancellationToken);
+                var entity = await dbContext.Posts.Where(x => x.Id == id && !x.Deleted)
+                    .Select(x => new ParsaludPost
+                    {
+                        Id = x.Id,
+                        Content = x.Content,
+                        Title = x.Title,
+                        ImgSrc = x.ImgSrc ?? "",
+                        PostCategory = x.PostCategory.Name,
+                        Hidden = x.Hidden,
+                        PostCategoryId = x.PostCategoryId,
+                        CreatedAt = x.CreatedAt,
+                        UpdatedAt = x.UpdatedAt,
+                    }).FirstOrDefaultAsync(cancellationToken);
+
+                return entity;
+            }, tags: [CacheTags.Post], token: cancellationToken);
 
             if (entity is null)
             {
@@ -86,7 +133,7 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
             var query = dbContext.Posts.AsQueryable();
 
             if (criteria.Ids?.Length > 0)
@@ -99,6 +146,12 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
             {
                 var cc = criteria.CategoryIds;
                 query = query.Where(x => cc.Contains(x.PostCategoryId));
+            }
+
+            if (criteria.ExcludedIds?.Length > 0)
+            {
+                var eIds = criteria.ExcludedIds;
+                query = query.Where(x => !eIds.Contains(x.Id));
             }
 
             query = query.Where(x => !x.Deleted);
@@ -118,11 +171,15 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
             if (criteria.Size.HasValue)
                 query = query.Take(criteria.Size.Value);
 
-            var entities = await query.Select(x => new ParsaludPost
+            var ihidden = criteria.IncludeHidden;
+            query = query.Where(x => (!ihidden && !x.Hidden) || ihidden);
+
+            var entities = await query.Where(x => !x.Deleted).Select(x => new ParsaludPost
             {
                 Id = x.Id,
                 Content = x.Content,
                 PostCategory = x.PostCategory.Name,
+                ImgSrc = x.ImgSrc ?? "",
                 Title = x.Title,
                 Hidden = x.Hidden,
                 PostCategoryId = x.PostCategoryId,
@@ -155,9 +212,9 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var query = dbContext.Posts.Take(4)
+            var query = dbContext.Posts.Where(x => !x.Deleted && !x.Hidden).Take(4)
                 .OrderByDescending(x => x.CreatedAt);
 
             var entity = await query.Select(x => new ParsaludPost
@@ -165,6 +222,7 @@ public class PostService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
                 Id = x.Id,
                 Content = x.Content,
                 PostCategory = x.PostCategory.Name,
+                ImgSrc = x.ImgSrc ?? "",
                 Title = x.Title,
                 Hidden = x.Hidden,
                 PostCategoryId = x.PostCategoryId,

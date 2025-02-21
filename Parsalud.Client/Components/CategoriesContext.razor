@@ -1,0 +1,28 @@
+﻿@inject NavigationManager NM
+@inject IPostCategoryService PostCategoryService
+@attribute [StreamRendering]
+
+@if (Categories is null)
+{
+    @if (!string.IsNullOrWhiteSpace(LoadingView))
+    {
+        <DynamicSection Code="@LoadingView" />
+    }
+}
+else
+{
+    @if (!string.IsNullOrWhiteSpace(View))
+    {
+        @foreach (var item in Categories)
+        {
+            Dictionary<string, object> attrs = new();
+            attrs.Add("Id", item.Id.ToString());
+            attrs.Add("Name", item.Name.ToString());
+            attrs.Add("PostsCount", item.PostsCount.ToString());
+            attrs.Add("CreatedAt", item.CreatedAt.ToString(formato, cultura));
+            attrs.Add("Checked", IsChecked(item.Id) ? "checked" : "");
+
+            <DynamicSection Attributes="@attrs" Code="@View" />
+        }
+    }
+}

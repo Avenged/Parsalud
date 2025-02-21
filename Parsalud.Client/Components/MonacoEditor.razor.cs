@@ -12,6 +12,9 @@ public partial class MonacoEditor : FormComponent<string>
     public bool ReadOnly { get; set; }
 
     [Parameter]
+    public RenderFragment? Tools { get; set; }
+
+    [Parameter]
     [EditorRequired]
     public required string Language { get; set; }
 

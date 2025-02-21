@@ -1,0 +1,45 @@
+﻿@attribute [StreamRendering]
+
+@inject IPostService PostService
+@inject NavigationManager NM
+
+@if (Posts is not null)
+{
+    @if (Posts.Data.Length > 0)
+    {
+        @if (!string.IsNullOrWhiteSpace(View))
+        {
+            @foreach (var post in Posts.Data)
+            {
+                Dictionary<string, object> attrs = new();
+                attrs.Add("Id", post.Id.ToString());
+                attrs.Add("Title", post.Title.ToString());
+                attrs.Add("Content", post.Content.ToString());
+                attrs.Add("Category", post.PostCategory.ToString());
+                attrs.Add("CategoryId", post.PostCategoryId.ToString());
+                attrs.Add("CreatedAt", post.CreatedAt.ToString(formato, cultura));
+                <DynamicSection Attributes="@attrs" Code="@View" />
+            }
+        }
+        @if (ShowPaginatorBool)
+        {
+            <ul class="pagination align-self-center">
+                @((MarkupString)GetPaginatorItems(Posts.TotalItems))
+            </ul>
+        }
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(NotFoundView))
+        {
+            <DynamicSection Code="@NotFoundView" />
+        }
+    }
+}
+else
+{
+    @if (!string.IsNullOrWhiteSpace(LoadingView))
+    {
+        <DynamicSection Code="@LoadingView" />
+    }
+}

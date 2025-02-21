@@ -6,6 +6,17 @@
     --bs-font-sans-serif: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --rz-primary: var(--parsalud-primary) !important;
     --rz-text-font-family: var(--bs-font-sans-serif) !important;
+    --rz-border-radius: 1.125rem !important;
+    --rz-button-border-radius: 3.125rem !important;
+    --rz-shadow-1: 0px 4px 20px rgba(50, 50, 51, 0.15) !important;
+}
+
+.rz-card {
+    padding: 2rem !important;
+}
+
+.rz-text-h2 {
+    font-family: "Playfair Display", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
 }
 
 html, body {

@@ -13,7 +13,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-    <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     @if (isDashboard)
     {
@@ -26,6 +25,7 @@
         <link rel="stylesheet" href="@Assets["lib/aos/dist/aos.css"]" />
         <HeadOutlet />
     }
+    <ImportMap />
 </head>
 
 <body>
@@ -78,6 +78,17 @@
 
             handleScreenSizeChange(mediaQuery);
             mediaQuery.addEventListener('change', handleScreenSizeChange);
+        </script>
+        <script type="text/javascript">
+            var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+            (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/67b5c715c16c46191cb1ef8e/1ikf13bel';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+            })();
         </script>
     }
 

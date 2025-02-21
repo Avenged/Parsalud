@@ -7,10 +7,12 @@ namespace Parsalud.Client.Components;
 public partial class LatestPostsContext : ParsaludComponent
 {
     [Parameter]
-    [EditorRequired]
-    public required string PostView { get; set; }
+    public string? View { get; set; }
 
-    private ParsaludPost[] LatestPosts { get; set; } = [];
+    [Parameter]
+    public string? LoadingView { get; set; }
+
+    private ParsaludPost[]? LatestPosts { get; set; }
     private const string formato = "MMMM d, yyyy";
     private static readonly CultureInfo cultura = new("es-ES");
 

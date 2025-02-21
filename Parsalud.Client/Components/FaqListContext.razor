@@ -1,7 +1,8 @@
 ﻿@inherits ParsaludComponent
 @inject IFaqService FaqService
+@attribute [StreamRendering]
 
-@if (items is null)
+@* @if (items is null)
 {
     <div class="d-flex justify-content-center">
         <div class="spinner-border" role="status">
@@ -28,41 +29,32 @@ else
             </div>
         }
     </div>
-}
+} *@
 
-@code {
-    [Parameter]
-    public string? Category { get; set; }
-
-    [Parameter]
-    public string? MaxCount { get; set; }
-
-    private ParsaludFaq[]? items;
-
-    protected override async Task OnInitializedAsync()
+@if (items is null)
+{
+    @if (!string.IsNullOrWhiteSpace(LoadingView))
     {
-        int maxCountInt;
-        int.TryParse(MaxCount, out maxCountInt);
-
-        var response = await FaqService.GetByCriteriaAsync(new FaqSearchCriteria
-        {
-            Category = Category,
-            MaxCount = maxCountInt == 0 ? null : maxCountInt,
-        });
-
-        if (response.IsSuccessWithData)
-        {
-            items = response.Data;
-        }
-        else
-        {
-            items = [];
-        }
+        <DynamicSection Code="@LoadingView" />
     }
-
-
-    protected override string GetComponentCssClass()
+    @* <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div> *@
+}
+else
+{
+    @if (!string.IsNullOrWhiteSpace(View))
     {
-        return "accordion";
+        @foreach (var item in items)
+        {
+            Dictionary<string, object> attrs = new();
+            attrs.Add("Id", item.Id.ToString());
+            attrs.Add("Question", item.Question);
+            attrs.Add("Answer", item.Answer);
+
+            <DynamicSection Code="@View" Attributes="@attrs" />
+        }
     }
 }

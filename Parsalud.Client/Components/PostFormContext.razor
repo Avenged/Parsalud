@@ -1,0 +1,6 @@
+﻿@inject NavigationManager NM
+
+@if (!string.IsNullOrWhiteSpace(View))
+{
+    <DynamicSection Code="@View" SearchStr="@(GetInputTextValue())" />
+}

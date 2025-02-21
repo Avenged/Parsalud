@@ -34,7 +34,10 @@ public partial class PostContext : ComponentBase
         if (response.IsSuccessWithData)
         {
             Post = response.Data.Data.FirstOrDefault();
-            found = true;
+            if (Post is not null)
+            {
+                found = true;
+            }
         }
         else
         {

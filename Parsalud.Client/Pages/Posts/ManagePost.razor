@@ -8,9 +8,9 @@
 @inherits BaseAbm<Guid>
 
 <PageTitle>@Action("Nuevo", "Editar", "Ver") artículo - Dashboard Parsalud</PageTitle>
-<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nuevo", "Editar", "Ver") artículo</RadzenText>
 
 <RadzenCard>
+    <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nuevo", "Editar", "Ver") artículo</RadzenText>
     <RadzenTemplateForm TItem="PostModel" Data="Model" Submit="Submit">
         <RadzenStack>
             <RadzenRow>
@@ -35,6 +35,14 @@
                                         @bind-Value=@Model.PostCategoryId />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.PostCategoryId) Text="Categoría es requerida" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn SizeMD="12">
+                    <RadzenFormField class="rz-w-100" Text="Link de imágen">
+                        <RadzenTextBox Name=@nameof(Model.ImgSrc) @bind-Value=@Model.ImgSrc />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component=@nameof(Model.ImgSrc) Text="Link de la imágen es requerido" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>

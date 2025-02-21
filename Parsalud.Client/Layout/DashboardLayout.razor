@@ -6,10 +6,11 @@
 <RadzenComponents @rendermode="InteractiveAuto" />
 <RadzenLayout>
     <RadzenHeader>
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="0">
+        <RadzenStack class="py-2" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="0">
             <div class="d-flex align-items-center">
                 <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-                <RadzenLabel Text="Parsalud" />
+              @*   <RadzenLabel Text="Parsalud" /> *@
+              <RadzenImage Path="images/logo_parsalud_blanco.webp" height="50" />
             </div>
 
             <div class="d-flex align-items-center">
@@ -48,11 +49,13 @@
     </RadzenHeader>
     <RadzenSidebar @bind-Expanded="@sidebarExpanded">
         <RadzenPanelMenu>
-            <RadzenPanelMenuItem Text="Administrar artículos" Icon="list" Path="Dashboard/Posts" />
-            <RadzenPanelMenuItem Text="Administrar categorías" Icon="list" Path="Dashboard/PostCategories" />
-            <RadzenPanelMenuItem Text="Administrar FAQs" Icon="list" Path="Dashboard/Faqs" />
-            <RadzenPanelMenuItem Text="Administrar secciones" Icon="list" Path="Dashboard/Sections" />
-            <RadzenPanelMenuItem Text="Administrar hojas de estilo" Icon="list" Path="Dashboard/StyleSheets" />
+            <RadzenPanelMenuItem Text="Administrar artículos" Icon="menu_book" Path="Dashboard/Posts" />
+            <RadzenPanelMenuItem Text="Administrar FAQs" Icon="psychology_alt" Path="Dashboard/Faqs" />
+            <RadzenPanelMenuItem Text="Administrar categorías" Icon="category" Path="Dashboard/PostCategories" />
+            <RadzenPanelMenuItem Text="Avanzado" Icon="admin_panel_settings">
+                <RadzenPanelMenuItem Text="Administrar secciones" Icon="stack_hexagon" Path="Dashboard/Sections" />
+                <RadzenPanelMenuItem Text="Administrar hojas de estilo" Icon="style" Path="Dashboard/StyleSheets" />
+            </RadzenPanelMenuItem>
         </RadzenPanelMenu>
     </RadzenSidebar>
     <PageStack>

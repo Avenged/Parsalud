@@ -1,12 +1,11 @@
 ﻿@page "/Dashboard/PostCategories"
-@inject IPostCategoryService Service
-@inject NavigationManager NM
+@inherits ManagerBase<IPostCategoryService, ParsaludPostCategory, PostCategorySearchCriteria>
 
 <PageTitle>Categorías - Dashboard Parsalud</PageTitle>
-<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">Administrar categorías</RadzenText>
 
 <RadzenStack>
     <RadzenCard>
+        <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">Administrar categorías</RadzenText>
         <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H5">Buscar categorías</RadzenText>
         <RadzenTemplateForm TItem="ManagePostCategories" Data="this" Submit="Submit">
             <RadzenStack>
@@ -17,10 +16,12 @@
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
-                <RadzenStack Orientation="Orientation.Horizontal">
-                    <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
-                    <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text="Limpiar" Icon="refresh" />
-                    <RadzenButton class="rz-w-fit-content" Variant="Variant.Outlined" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                    <div>
+                        <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
+                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" />
+                    </div>
+                    <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Success" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
                 </RadzenStack>
             </RadzenStack>
         </RadzenTemplateForm>
@@ -31,20 +32,18 @@
         <RadzenCard>
             @if (Items.Length > 0)
             {
-                <RadzenFieldset Text=@($"Resultados ({Items.Length})")>
-                    <RadzenDataList TItem="ParsaludPostCategory" Data="Items" AllowVirtualization="true">
-                        <Template>
-                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-                                <RadzenText>@context.Name</RadzenText>
-                                <RadzenStack Orientation="Orientation.Horizontal">
-                                    <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" />
-                                    <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" />
-                                    <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" />
-                                </RadzenStack>
+                <RadzenDataList TItem="ParsaludPostCategory" Data="Items" AllowVirtualization="true">
+                    <Template>
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                            <RadzenText><b>@context.Name</b></RadzenText>
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" Click="@(x => Delete(context.Id))" />
                             </RadzenStack>
-                        </Template>
-                    </RadzenDataList>
-                </RadzenFieldset>
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataList>
             }
             else
             {

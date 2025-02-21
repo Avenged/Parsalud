@@ -3,13 +3,11 @@
 namespace Parsalud.BusinessLayer.Abstractions;
 
 [GenerateClient]
-public interface ISectionService
+public interface ISectionService : IManagerServiceBase<ParsaludSection, SectionSearchCriteria>
 {
     Task UpdateLiveServerAsync(LiveServerInstance ins, CancellationToken cancellationToken = default);
     Task<BusinessResponse<ParsaludSection>> CreateAsync(ManageSectionRequest request, CancellationToken cancellationToken = default);
     Task<BusinessResponse<ParsaludSection>> UpdateAsync(Guid id, ManageSectionRequest request, CancellationToken cancellationToken = default);
-    Task<BusinessResponse> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<BusinessResponse<ParsaludSection[]>> GetByCriteriaAsync(SectionSearchCriteria criteria, CancellationToken cancellationToken = default);
     Task<BusinessResponse<ParsaludSection>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<BusinessResponse<ParsaludSection>> GetByCodeAsync(
         string code,

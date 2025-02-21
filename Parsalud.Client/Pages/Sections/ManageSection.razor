@@ -4,16 +4,18 @@
 
 @inject ISectionService Service
 @inject IStyleSheetService StyleSheetService
-@inject NavigationManager NM
 
 @inherits BaseAbm<Guid>
 
 @using Radzen.Blazor.Rendering
 
 <PageTitle>@Action("Nueva", "Editar", "Ver") sección - Dashboard Parsalud</PageTitle>
-<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nueva", "Editar", "Ver") sección</RadzenText>
 
 <RadzenCard>
+    <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nueva", "Editar", "Ver") sección</RadzenText>
+    <RadzenAlert AlertStyle="AlertStyle.Base">
+        Se recomienda precaución al modificar las secciones. Para evitar la pérdida de información debido a posibles errores, es aconsejable crear una copia de seguridad antes de realizar cualquier cambio, permitiendo así la recuperación del estado original si es necesario.
+    </RadzenAlert>
     <RadzenTemplateForm @ref="Form" TItem="SectionModel" Data="Model" Submit="Submit">
         <RadzenStack>
             <RadzenRow>
@@ -39,6 +41,7 @@
                                          ExpandAriaLabel="Expandir"
                                          CollapseAriaLabel="Contraer"
                                          @bind-Selected=@ParametrosRutaSelected>
+                        <RadzenAlert AlertStyle="AlertStyle.Info" Text="Asignar parámetros convertirá su sección en una página. La url debe coincidir con los parámetros asignados acá para poder ser encontrada por el router." />
                         <RadzenStack Gap="1rem">
                             <RadzenTextBox Placeholder="Página" @bind-Value=@Model.Page />
                             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Wrap="FlexWrap.Wrap">
@@ -53,17 +56,17 @@
                     </RadzenAccordionItem>
                 </Items>
             </RadzenAccordion>
-           
-            <RadzenTabs>
+
+            <RadzenTabs Style="height:74vh">
                 <Tabs>
                     <RadzenTabsItem Text="Vista">
                         <RadzenRow>
                             <RadzenColumn SizeMD="12">
                                 <div class="position-relative">
-                                    <iframe @key=@iframei src=@($"{NM.BaseUri}Preview/{Model.Code}/{LiveServerId}") style="height:80vh;width:100%"></iframe>
+                                    <iframe @key=@iframei src=@($"{NM.BaseUri}Preview/{Model.Code}/{LiveServerId}") style="height:50vh;width:100%"></iframe>
                                     <a target="_blank" href=@($"{NM.BaseUri}Watch/{Model.Code}/{LiveServerId}") style="top:1rem;right:1rem;position:absolute">Abrir en nueva ventana</a>
                                 </div>
-                        @*         <RadzenHtmlEditor Mode="HtmlEditorMode.Design"
+                                @*         <RadzenHtmlEditor Mode="HtmlEditorMode.Design"
                                                   Style="min-height:400px;max-height:400px;"
                                                   ShowToolbar="false"
                                                   Disabled="true"
@@ -93,29 +96,51 @@
                                                   Language="css"
                                                   ReadOnly="@ReadOnly"
                                                   ValueChanged="StyleChanged"
-                                                  Value=@StyleSheetModel.Content />
+                                                  Value=@StyleSheetModel.Content>
+                                        <Tools>
+                                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                                                <RadzenDropDown TValue="ParsaludStyleSheet"
+                                                                class="rz-w-100"
+                                                                Placeholder="Hoja de estilos"
+                                                                Data="StyleSheets"
+                                                                TextProperty=@nameof(ParsaludStyleSheet.FileName)
+                                                                AllowClear="true"
+                                                                AllowFiltering="true"
+                                                                FilterAsYouType="true"
+                                                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                                FilterOperator="StringFilterOperator.Contains"
+                                                                ValueChanged="StyleSheetChange"
+                                                                Value="StyleSheet" />
+                                                <ButtonWithTooltip @ref=Button class="rz-h-100" Icon="add" TooltipText="Nueva hoja de estilos" Click="CreateNewStyleSheet" />
+                                            </RadzenStack>
+                                        </Tools>
+                                    </MonacoEditor>
                                 </RadzenColumn>
                             </RadzenRow>
                         }
-                        <RadzenRow>
-                            <RadzenColumn SizeMD="6">
-                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
-                                    <RadzenDropDown TValue="ParsaludStyleSheet"
-                                                    class="rz-w-100"
-                                                    Placeholder="Hoja de estilos"
-                                                    Data="StyleSheets"
-                                                    TextProperty=@nameof(ParsaludStyleSheet.FileName)
-                                                    AllowClear="true"
-                                                    AllowFiltering="true"
-                                                    FilterAsYouType="true"
-                                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                                    FilterOperator="StringFilterOperator.Contains"
-                                                    ValueChanged="StyleSheetChange"
-                                                    Value="StyleSheet" />
-                                    <ButtonWithTooltip @ref=Button class="rz-h-100" Icon="add" TooltipText="Nueva hoja de estilos" Click="CreateNewStyleSheet" />
-                                </RadzenStack>
-                            </RadzenColumn>
-                        </RadzenRow>
+                        else
+                        {
+                            <RadzenRow>
+                                <RadzenAlert AlertStyle="AlertStyle.Info" Text="Use una hoja de estilos para mantener los estilos de su sección en un solo lugar." />
+                                <RadzenColumn SizeMD="6">
+                                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                                        <RadzenDropDown TValue="ParsaludStyleSheet"
+                                                        class="rz-w-100"
+                                                        Placeholder="Hoja de estilos"
+                                                        Data="StyleSheets"
+                                                        TextProperty=@nameof(ParsaludStyleSheet.FileName)
+                                                        AllowClear="true"
+                                                        AllowFiltering="true"
+                                                        FilterAsYouType="true"
+                                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                        FilterOperator="StringFilterOperator.Contains"
+                                                        ValueChanged="StyleSheetChange"
+                                                        Value="StyleSheet" />
+                                        <ButtonWithTooltip @ref=Button class="rz-h-100" Icon="add" TooltipText="Nueva hoja de estilos" Click="CreateNewStyleSheet" />
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                        }
                     </RadzenTabsItem>
                 </Tabs>
             </RadzenTabs>
@@ -142,7 +167,7 @@
 <style type="text/css">
     @($"#{editorHtmlId}, #{editorCssId}")
     {
-        height: 80vh;
+        height: 50vh;
     }
 
     .my-popup {

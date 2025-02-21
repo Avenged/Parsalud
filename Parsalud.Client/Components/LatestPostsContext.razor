@@ -2,14 +2,28 @@
 @inherits ParsaludComponent
 @attribute [StreamRendering]
 
-@foreach (var LatestPost in LatestPosts)
+@if (LatestPosts is null)
 {
-    Dictionary<string, object> attrs = new();
-    attrs.Add("Id", LatestPost.Id.ToString());
-    attrs.Add("Title", LatestPost.Title.ToString());
-    attrs.Add("Content", LatestPost.Content.ToString());
-    attrs.Add("Category", LatestPost.PostCategory.ToString());
-    attrs.Add("CreatedAt", LatestPost.CreatedAt.ToString(formato, cultura));
+    @if (!string.IsNullOrWhiteSpace(LoadingView))
+    {
+        <DynamicSection Code="@LoadingView" />
+    }
+}
+else
+{
+    @if (!string.IsNullOrWhiteSpace(View))
+    {
+        @foreach (var LatestPost in LatestPosts)
+        {
+            Dictionary<string, object> attrs = new();
+            attrs.Add("Id", LatestPost.Id.ToString());
+            attrs.Add("Title", LatestPost.Title.ToString());
+            attrs.Add("Content", LatestPost.Content.ToString());
+            attrs.Add("Category", LatestPost.PostCategory.ToString());
+            attrs.Add("CategoryId", LatestPost.PostCategoryId.ToString());
+            attrs.Add("CreatedAt", LatestPost.CreatedAt.ToString(formato, cultura));
 
-    <DynamicSection Attributes="@attrs" Code="@PostView" />
+            <DynamicSection Attributes="@attrs" Code="@View" />
+        }
+    }
 }

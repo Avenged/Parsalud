@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -245,13 +246,30 @@ public class ClientImplementationGenerator : IIncrementalGenerator
         ReportInfo(context, "INF0001", $"The class '{fileName}' was generated");
     }
 
+    private static List<IMethodSymbol> RecursiveExtractMethods(INamedTypeSymbol symbol, List<IMethodSymbol>? methods = null)
+    {
+        methods ??= [];
+        methods.AddRange(symbol.GetMembers().OfType<IMethodSymbol>());
+
+        if (symbol.AllInterfaces.Length > 0)
+        {
+            foreach (var i in symbol.AllInterfaces)
+            {
+                RecursiveExtractMethods(i, methods);
+            }
+        }
+
+        return methods;
+    }
+
     public static string GenerateMethods(INamedTypeSymbol interfaceSymbol)
     {
         try
         {
             StringBuilder sb = new();
+            var methods = RecursiveExtractMethods(interfaceSymbol);
 
-            foreach (var method in interfaceSymbol.GetMembers().OfType<IMethodSymbol>())
+            foreach (var method in methods)
             {
                 var taskReturnType = method.ReturnType.ToDisplayString();
                 var fullGenericArgumentType = "";

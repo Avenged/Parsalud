@@ -117,7 +117,7 @@ public partial class ManageSection : BaseAbm<Guid>
 
         if (response.IsSuccessWithData)
         {
-            StyleSheets = [..response.Data];
+            StyleSheets = [..response.Data.Data];
         }
     }
 
@@ -258,6 +258,10 @@ public partial class ManageSection : BaseAbm<Guid>
         {
             StyleSheets.Add(response.Data);
             StyleSheetChange(response.Data);
+        }
+        else
+        {
+            NS.Notify(Radzen.NotificationSeverity.Warning, summary: "No se pudo crear la hoja de estilo", detail: response.Message);
         }
 
         CreateStyleSheetModel = new();

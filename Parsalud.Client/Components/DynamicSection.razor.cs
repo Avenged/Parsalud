@@ -5,7 +5,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Parsalud.BusinessLayer.Abstractions;
 using System.Text;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Collections.Generic;
 
 namespace Parsalud.Client.Components;
 
@@ -54,18 +53,26 @@ public partial class DynamicSection : ComponentBase
     private string? content;
     private readonly Dictionary<string, Type> componentMappings = new()
     {
+        { nameof(PostFormContext), typeof(PostFormContext) },
+        { nameof(CategoriesContext), typeof(CategoriesContext) },
         { nameof(PostContext), typeof(PostContext) },
         { nameof(AntiforgeryToken), typeof(AntiforgeryToken) },
-        { nameof(PostsViewer), typeof(PostsViewer) },
+        { nameof(PostsByQueryContext), typeof(PostsByQueryContext) },
         { nameof(CurrentPageTitle), typeof(CurrentPageTitle) },
         { nameof(DynamicSection), typeof(DynamicSection) },
         { nameof(LatestPostsContext), typeof(LatestPostsContext) },
-        { nameof(FaqList), typeof(FaqList) }
+        { nameof(FaqListContext), typeof(FaqListContext) }
         // Agrega más componentes aquí según los que pueden llegar desde la base de datos.
     };
+    private static readonly string[] exclusions = ["bundle.min.css", "{src}", "{Src}"];
 
     protected override async Task OnParametersSetAsync()
     {
+        if (exclusions.Contains(Code))
+        {
+            return;
+        }
+
         if (prevI == I &&
             prevCode == Code &&
             prevLiveServerId == LiveServerId)
@@ -156,7 +163,7 @@ public partial class DynamicSection : ComponentBase
 
                 var replaceable = "{" + attribute.Key + "}";
                 var exists = content.Contains(replaceable);
-                content = content.Replace(replaceable, attribute.Value.ToString());
+                content = content.Replace(replaceable, attribute.Value?.ToString());
                 if (exists)
                 {
                     used.Add(attribute);
@@ -196,8 +203,9 @@ public partial class DynamicSection : ComponentBase
 
         if (node.NodeType == HtmlNodeType.Text)
         {
+            var innerHtml = node.InnerHtml;
             // Renderizar texto directamente
-            builder.AddContent(sequence++, node.InnerHtml);
+            builder.AddMarkupContent(sequence++, innerHtml);
             return;
         }
 

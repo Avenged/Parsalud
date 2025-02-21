@@ -1,5 +1,6 @@
 ﻿using Parsalud.Client.Components;
 using Parsalud.BusinessLayer.Abstractions;
+using Radzen;
 
 namespace Parsalud.Client.Pages.Posts;
 
@@ -23,10 +24,20 @@ public partial class ManagePost : BaseAbm<Guid>
     {
         if (AbmAction == AbmAction.Create)
         {
+            if (!await DS.ConfirmCreationAsync())
+            {
+                return;
+            }
+
             var response = await Service.CreateAsync(Model.ToRequest());
         }
         else if (AbmAction == AbmAction.Update)
         {
+            if (!await DS.ConfirmDeletionAsync())
+            {
+                return;
+            }
+
             var response = await Service.UpdateAsync(Id, Model.ToRequest());
         }
 

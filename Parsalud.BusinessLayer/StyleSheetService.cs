@@ -1,25 +1,39 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Core;
+using Microsoft.EntityFrameworkCore;
 using NUglify;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
 using System.Text;
 using VENative.Blazor.ServiceGenerator.Attributes;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace Parsalud.BusinessLayer;
 
 [GenerateHub]
-public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFactory,
-    IUserService userService) : IStyleSheetService
+public class StyleSheetService(
+    IDbContextFactory<ParsaludDbContext> dbContextFactory,
+    IUserService userService,
+    IFusionCache fusionCache) : IStyleSheetService
 {
-    private readonly IDbContextFactory<ParsaludDbContext> dbContextFactory = dbContextFactory;
-    private readonly IUserService userService = userService;
+    private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
+    private readonly IUserService _userService = userService;
+    private readonly IFusionCache _cache = fusionCache;
+    private static readonly StringComparison comp = StringComparison.CurrentCultureIgnoreCase;
 
     public async Task<BusinessResponse<ParsaludStyleSheet>> CreateAsync(ManageStyleSheetRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            var entities = await GetEntitiesAsync(cancellationToken);
+            var exists = entities.Any(x => x.FileName.Equals(request.FileName, comp));
+
+            if (exists)
+            {
+                return BusinessResponse.Error<ParsaludStyleSheet>("Ya existe una hoja de estilos con el mismo nombre");
+            }
 
             StyleSheet styleSheet = new()
             {
@@ -27,11 +41,13 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
                 FileName = request.FileName,
                 Content = request.Content,
                 CreatedAt = DateTime.Now,
-                CreatedById = userService.Id,
+                CreatedById = _userService.Id,
             };
             dbContext.Add(styleSheet);
 
             await dbContext.SaveChangesAsync(cancellationToken);
+            await _cache.RemoveByTagAsync(CacheTags.StyleSheets, token: cancellationToken);
+
             return BusinessResponse.Success(new ParsaludStyleSheet
             {
                 Id = styleSheet.Id,
@@ -49,15 +65,27 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
-            var entity = await dbContext.StyleSheets.FirstAsync(x => x.Id == id, cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            var entities = await GetEntitiesAsync(cancellationToken);
+            var exists = entities.Any(x => x.FileName.Equals(request.FileName, comp) && x.Id != id);
+
+            if (exists)
+            {
+                return BusinessResponse.Error<ParsaludStyleSheet>("Ya existe una hoja de estilos con el mismo nombre");
+            }
+
+            var entity = entities.First(x => x.Id == id && !x.Deleted);
 
             entity.FileName = request.FileName;
             entity.Content = request.Content;
             entity.UpdatedAt = DateTime.Now;
-            entity.UpatedById = userService.Id;
+            entity.UpatedById = _userService.Id;
 
+            dbContext.Update(entity);
             await dbContext.SaveChangesAsync(cancellationToken);
+
+            await _cache.RemoveByTagAsync(CacheTags.StyleSheets, token: cancellationToken);
             return BusinessResponse.Success();
         }
         catch (Exception)
@@ -66,36 +94,65 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
         }
     }
 
-    public Task<BusinessResponse> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<BusinessResponse<ParsaludStyleSheet[]>> GetByCriteriaAsync(StyleSheetSearchCriteria criteria, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
-            var query = dbContext.StyleSheets.AsQueryable();
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            var entities = await GetEntitiesAsync(cancellationToken);
+
+            var entity = entities.First(x => x.Id == id && !x.Deleted);
+
+            entity.Deleted = true;
+            entity.UpdatedAt = DateTime.Now;
+            entity.UpatedById = _userService.Id;
+
+            dbContext.Update(entity);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            await _cache.RemoveByTagAsync(CacheTags.StyleSheets, token: cancellationToken);
+            return BusinessResponse.Success();
+        }
+        catch (Exception)
+        {
+            return BusinessResponse.Error("Ocurrió un error inesperado");
+        }
+    }
+
+    public async Task<BusinessResponse<Paginated<ParsaludStyleSheet[]>>> GetByCriteriaAsync(StyleSheetSearchCriteria criteria, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var entities = await GetEntitiesAsync(cancellationToken);
+            var query = entities.AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(criteria.FileName))
-                query = query.Where(x => EF.Functions.Like(x.FileName, $"%{criteria.FileName}%"));
+                query = query.Where(x => x.FileName.Contains(criteria.FileName, comp));
 
             if (!string.IsNullOrWhiteSpace(criteria.Content))
-                query = query.Where(x => EF.Functions.Like(x.Content, $"%{criteria.Content}%"));
+                query = query.Where(x => x.Content.Contains(criteria.Content, comp));
 
-            var entity = await query.Select(x => new ParsaludStyleSheet
+            query = query.Where(x => !x.Deleted);
+
+            var results = query.Select(x => new ParsaludStyleSheet
             {
                 Id = x.Id,
                 Content = x.Content,
                 FileName = x.FileName,
-            }).ToArrayAsync(cancellationToken);
+            }).ToArray();
 
-            return BusinessResponse.Success(entity);
+            return BusinessResponse.Success(new Paginated<ParsaludStyleSheet[]>
+            {
+                Data = results,
+                Page = 0,
+                PageSize = results.Length,
+                TotalItems = results.Length
+            });
         }
         catch
         {
-            return BusinessResponse.Error<ParsaludStyleSheet[]>("Ocurrió un error inesperado");
+            return BusinessResponse.Error<Paginated<ParsaludStyleSheet[]>>("Ocurrió un error inesperado");
         }
     }
 
@@ -103,15 +160,14 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
-
-            var entity = await dbContext.StyleSheets.Where(x => x.Id == id)
+            var entities = await GetEntitiesAsync(cancellationToken);
+            var entity = entities.Where(x => x.Id == id && !x.Deleted)
                 .Select(x => new ParsaludStyleSheet
                 {
                     Id = x.Id,
                     Content = x.Content,
                     FileName = x.FileName,
-                }).FirstOrDefaultAsync(cancellationToken);
+                }).FirstOrDefault();
 
             if (entity is null)
             {
@@ -130,15 +186,15 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            var entities = await GetEntitiesAsync(cancellationToken);
 
-            var entity = await dbContext.StyleSheets.Where(x => x.FileName.ToUpper() == fileName.ToUpper())
+            var entity = entities.Where(x => x.FileName.Equals(fileName, comp) && !x.Deleted)
                 .Select(x => new ParsaludStyleSheet
                 {
                     Id = x.Id,
                     Content = x.Content,
                     FileName = x.FileName,
-                }).FirstOrDefaultAsync(cancellationToken);
+                }).FirstOrDefault();
 
             if (entity is null)
             {
@@ -170,9 +226,9 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
         var stylesheets = await stylesheetsTask;
         if (stylesheets.IsSuccessWithData)
         {
-            foreach (var styleSheet in stylesheets.Data)
+            foreach (var styleSheet in stylesheets.Data.Data)
             {
-                if (styleSheet.FileName.Equals("app.css", StringComparison.InvariantCultureIgnoreCase))
+                if (styleSheet.FileName.Equals("app.css", comp))
                 {
                     continue;
                 }
@@ -182,5 +238,18 @@ public class StyleSheetService(IDbContextFactory<ParsaludDbContext> dbContextFac
 
         var content = Uglify.Css(sb.ToString());
         return BusinessResponse.Success(content.Code);
+    }
+
+    private async Task<List<StyleSheet>> GetEntitiesAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _cache.GetOrSetAsync(CacheTags.Section, async token =>
+        {
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(token);
+            var section = await dbContext.StyleSheets.Where(x => !x.Deleted)
+                .ToListAsync(token);
+            return section;
+        }, tags: [CacheTags.StyleSheets], token: cancellationToken);
+
+        return entities;
     }
 }

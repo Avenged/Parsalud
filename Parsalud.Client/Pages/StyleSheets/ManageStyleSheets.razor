@@ -1,12 +1,11 @@
 ﻿@page "/Dashboard/StyleSheets"
-@inject IStyleSheetService Service
-@inject NavigationManager NM
+@inherits ManagerBase<IStyleSheetService, ParsaludStyleSheet, StyleSheetSearchCriteria>
 
 <PageTitle>Hojas de estilo - Dashboard Parsalud</PageTitle>
-<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">Administrar hojas de estilo</RadzenText>
 
 <RadzenStack>
     <RadzenCard>
+        <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">Administrar hojas de estilo</RadzenText>
         <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H5">Buscar hojas de estilo</RadzenText>
         <RadzenTemplateForm TItem="ManageStyleSheets" Data="this" Submit="Submit">
             <RadzenStack>
@@ -22,10 +21,12 @@
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
-                <RadzenStack Orientation="Orientation.Horizontal">
-                    <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
-                    <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text="Limpiar" Icon="refresh" />
-                    <RadzenButton class="rz-w-fit-content" Variant="Variant.Outlined" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                    <div>
+                        <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
+                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" />
+                    </div>
+                    <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Success" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
                 </RadzenStack>
             </RadzenStack>
         </RadzenTemplateForm>
@@ -36,20 +37,18 @@
         <RadzenCard>
             @if (Items.Length > 0)
             {
-                <RadzenFieldset Text=@($"Resultados ({Items.Length})")>
-                    <RadzenDataList TItem="ParsaludStyleSheet" Data="Items" AllowVirtualization="true">
-                        <Template>
-                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-                                <RadzenText>@context.FileName</RadzenText>
-                                <RadzenStack Orientation="Orientation.Horizontal">
-                                    <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" Link=@($"Dashboard/StyleSheet/{context.Id}/View") />
-                                    <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" Link=@($"Dashboard/StyleSheet/{context.Id}/Update") />
-                                    <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" />
-                                </RadzenStack>
+                <RadzenDataList TItem="ParsaludStyleSheet" Data="Items" AllowVirtualization="true">
+                    <Template>
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                            <RadzenText><b>@context.FileName</b></RadzenText>
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" Link=@($"Dashboard/StyleSheet/{context.Id}/View") />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" Link=@($"Dashboard/StyleSheet/{context.Id}/Update") />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" Click="@(x => Delete(context.Id))" />
                             </RadzenStack>
-                        </Template>
-                    </RadzenDataList>
-                </RadzenFieldset>
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataList>
             }
             else
             {

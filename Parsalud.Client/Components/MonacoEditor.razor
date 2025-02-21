@@ -2,8 +2,15 @@
 
 @if (Visible)
 {
-    <div class="mb-2">
-        <ButtonWithTooltip Icon="format_indent_increase" TooltipText="Indentar código" Click="Indent" />
+    <div class="d-flex gap-2 mb-2 align-items-center" style="height:40px">
+        <span>
+            <ButtonWithTooltip Icon="format_indent_increase"
+                               TooltipText="Indentar código"
+                               Click="Indent" />
+        </span>
+        <span>
+            @Tools
+        </span>
     </div>
     <StandaloneCodeEditor @ref="@editor"
                           @attributes="Attributes"
