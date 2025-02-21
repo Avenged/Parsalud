@@ -12,8 +12,16 @@ using Microsoft.AspNetCore.Antiforgery;
 using Humanizer;
 using ZiggyCreatures.Caching.Fusion;
 using Parsalud;
+using NUglify.Helpers;
+using MimeKit;
+using NuGet.Configuration;
+using Microsoft.Extensions.Options;
+using MailKit.Net.Smtp;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 if (OperatingSystem.IsWindows())
 {
@@ -66,15 +74,30 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (configuration.GetValue<bool>("UseHttpsRedirection"))
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapControllers();
 app.MapPost("/contactme", async (
     HttpContext context,
     [FromForm] IFormCollection form, 
+    IOptions<EmailSettings> settings,
+    ILogger<Program> Logger,
     IAntiforgery antiforgery) =>
 {
+    var emailFrom = settings.Value.EmailFrom;
+    var emailTo = settings.Value.EmailTo;
+    var subject = settings.Value.Subject;
+    var username = settings.Value.Username;
+    var password = settings.Value.Password;
+    var host = settings.Value.Host;
+    var port = settings.Value.Port;
+    var template = settings.Value.Template;
+
     if (!string.IsNullOrWhiteSpace(form["__RequestVerificationToken"]))
     {
         context.Request.Headers.TryAdd("X-CSRF-TOKEN", form["__RequestVerificationToken"]);
@@ -94,38 +117,42 @@ app.MapPost("/contactme", async (
     string? mail = form["email"].FirstOrDefault()?.Truncate(50);
     string? comments = form["comments"].FirstOrDefault()?.Truncate(500);
 
+    string?[] strs = [givenName, familyName, tel, mail];
+
+    if (strs.Any(x => string.IsNullOrWhiteSpace(x)))
+    {
+        return Results.BadRequest("Formulario incorrecto");
+    }
+
+    template = template.Replace("{GivenName}", givenName);
+    template = template.Replace("{FamilyName}", familyName);
+    template = template.Replace("{Tel}", tel);
+    template = template.Replace("{Mail}", mail);
+    template = template.Replace("{Comments}", comments);
+
     try
     {
-        //MimeMessage email = new();
-        //email.From.Add(new MailboxAddress("Parsalud", "notificaciones@tuempresa.com"));
-        //email.To.Add(new MailboxAddress("Asesor", "asesor@tuempresa.com"));
-        //email.Subject = "Nuevo Contacto de Cliente";
+        MimeMessage email = new();
+        email.From.Add(new MailboxAddress("Parsalud Web App", emailFrom));
+        email.To.Add(new MailboxAddress("Asesor", emailTo));
+        email.Subject = subject;
 
-        //email.Body = new TextPart("plain")
-        //{
-        //    Text = 
-        //    $"""
-        //    Nuevo cliente ha enviado un formulario:
+        email.Body = new TextPart("plain")
+        {
+            Text = template
+        };
 
-        //    - Nombre: {givenName} {familyName}
-        //    - Teléfono: {tel}
-        //    - Email: {mail}
-        //    - Comentarios: {comments}
-
-        //    Contactar lo antes posible.
-        //    """
-        //};
-
-        //using var smtp = new SmtpClient();
-        //await smtp.ConnectAsync("smtp.tudominio.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
-        //await smtp.AuthenticateAsync("notificaciones@tuempresa.com", "tucontraseña");
-        //await smtp.SendAsync(email);
-        //await smtp.DisconnectAsync(true);
+        using SmtpClient smtp = new();
+        await smtp.ConnectAsync(host, port, MailKit.Security.SecureSocketOptions.StartTls);
+        await smtp.AuthenticateAsync(username, password);
+        await smtp.SendAsync(email);
+        await smtp.DisconnectAsync(true);
 
         return Results.LocalRedirect("~/Contacto/Success");
     }
     catch (Exception ex)
     {
+        Logger.LogCritical(ex, "No se pudo enviar el mail de contacto");
         return Results.Problem("Error al enviar el correo: " + ex.Message);
     }
 });
