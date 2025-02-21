@@ -11,62 +11,88 @@ namespace Parsalud.BusinessLayer;
 [GenerateHub]
 public class PostService(
     IDbContextFactory<ParsaludDbContext> dbContextFactory,
-    IUserService userService,
-    IFusionCache cache) : IPostService
+    IUserService userService) : IPostService
 {
     private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
     private readonly IUserService _userService = userService;
-    private readonly IFusionCache _cache = cache;
 
-    public async Task<BusinessResponse> CreateAsync(ManagePostRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<ParsaludPost>> CreateAsync(ManagePostRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            dbContext.Add(new Post
+            var entity = new Post
             {
                 Id = Guid.NewGuid(),
                 Title = request.Title,
                 Content = request.Content,
+                Description = request.Description,
                 Hidden = request.Hidden,
                 ImgSrc = request.ImgSrc,
                 PostCategoryId = request.PostCategoryId,
                 CreatedAt = DateTime.Now,
                 CreatedById = _userService.Id,
-            });
+            };
+            dbContext.Add(entity);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            return BusinessResponse.Success();
+            return BusinessResponse.Success(new ParsaludPost
+            {
+                Id = entity.Id,
+                Content = entity.Content,
+                Title = entity.Title,
+                Description = entity.Description ?? "",
+                ImgSrc = entity.ImgSrc ?? "",
+                PostCategory = entity.PostCategory.Name,
+                Hidden = entity.Hidden,
+                PostCategoryId = entity.PostCategoryId,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt,
+            });
         }
         catch (Exception)
         {
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            return BusinessResponse.Error<ParsaludPost>("Ocurrió un error inesperado");
         }
     }
 
-    public async Task<BusinessResponse> UpdateAsync(Guid id, ManagePostRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<ParsaludPost>> UpdateAsync(Guid id, ManagePostRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var post = await dbContext.Posts.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
+            var entity = await dbContext.Posts.Include(x => x.PostCategory)
+                .FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
 
-            post.Title = request.Title;
-            post.Content = request.Content;
-            post.ImgSrc = request.ImgSrc;
-            post.Hidden = request.Hidden;
-            post.PostCategoryId = request.PostCategoryId;
-            post.UpdatedAt = DateTime.Now;
-            post.UpatedById = _userService.Id;
+            entity.Title = request.Title;
+            entity.Description = request.Description;
+            entity.Content = request.Content;
+            entity.ImgSrc = request.ImgSrc;
+            entity.Hidden = request.Hidden;
+            entity.PostCategoryId = request.PostCategoryId;
+            entity.UpdatedAt = DateTime.Now;
+            entity.UpatedById = _userService.Id;
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            return BusinessResponse.Success();
+            return BusinessResponse.Success(new ParsaludPost
+            {
+                Id = entity.Id,
+                Content = entity.Content,
+                Title = entity.Title,
+                Description = entity.Description ?? "",
+                ImgSrc = entity.ImgSrc ?? "",
+                PostCategory = entity.PostCategory.Name,
+                Hidden = entity.Hidden,
+                PostCategoryId = entity.PostCategoryId,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt,
+            });
         }
         catch (Exception)
         {
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            return BusinessResponse.Error<ParsaludPost>("Ocurrió un error inesperado");
         }
     }
 
@@ -95,26 +121,22 @@ public class PostService(
     {
         try
         {
-            var entity = await _cache.GetOrSetAsync($"post|{id}", async token =>
-            {
-                await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-                var entity = await dbContext.Posts.Where(x => x.Id == id && !x.Deleted)
-                    .Select(x => new ParsaludPost
-                    {
-                        Id = x.Id,
-                        Content = x.Content,
-                        Title = x.Title,
-                        ImgSrc = x.ImgSrc ?? "",
-                        PostCategory = x.PostCategory.Name,
-                        Hidden = x.Hidden,
-                        PostCategoryId = x.PostCategoryId,
-                        CreatedAt = x.CreatedAt,
-                        UpdatedAt = x.UpdatedAt,
-                    }).FirstOrDefaultAsync(cancellationToken);
-
-                return entity;
-            }, tags: [CacheTags.Post], token: cancellationToken);
+            var entity = await dbContext.Posts.Where(x => x.Id == id && !x.Deleted)
+                .Select(x => new ParsaludPost
+                {
+                    Id = x.Id,
+                    Content = x.Content,
+                    Description = x.Description ?? "",
+                    Title = x.Title,
+                    ImgSrc = x.ImgSrc ?? "",
+                    PostCategory = x.PostCategory.Name,
+                    Hidden = x.Hidden,
+                    PostCategoryId = x.PostCategoryId,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt,
+                }).FirstOrDefaultAsync(cancellationToken);
 
             if (entity is null)
             {
@@ -178,6 +200,7 @@ public class PostService(
             {
                 Id = x.Id,
                 Content = x.Content,
+                Description = x.Description ?? "",
                 PostCategory = x.PostCategory.Name,
                 ImgSrc = x.ImgSrc ?? "",
                 Title = x.Title,
@@ -221,6 +244,7 @@ public class PostService(
             {
                 Id = x.Id,
                 Content = x.Content,
+                Description = x.Description ?? "",
                 PostCategory = x.PostCategory.Name,
                 ImgSrc = x.ImgSrc ?? "",
                 Title = x.Title,

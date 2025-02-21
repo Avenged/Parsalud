@@ -11,9 +11,25 @@ using Parsalud.BusinessLayer.Abstractions;
 using Microsoft.AspNetCore.Antiforgery;
 using Humanizer;
 using ZiggyCreatures.Caching.Fusion;
+using Parsalud;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (OperatingSystem.IsWindows())
+{
+    builder.Logging.AddEventLog(options =>
+    {
+        options.LogName = "Application";
+        options.SourceName = "Parsalud Web App";
+    });
+}
+
+builder.Services.AddControllers();
+builder.Services.AddSingleton<IParsaludWebHostEnvironment>(x =>
+{
+    var env = x.GetRequiredService<IWebHostEnvironment>();
+    return new ParsaludWebHostEnvironment(env.WebRootPath);
+});
 builder.Services.AddRadzenComponents();
 builder.Services.AddFusionCache().WithDefaultEntryOptions(options =>
 {
@@ -51,9 +67,9 @@ else
 }
 
 app.UseHttpsRedirection();
-
 app.UseAntiforgery();
-
+app.MapStaticAssets();
+app.MapControllers();
 app.MapPost("/contactme", async (
     HttpContext context,
     [FromForm] IFormCollection form, 
@@ -114,10 +130,9 @@ app.MapPost("/contactme", async (
     }
 });
 
-app.MapGeneratedHubs(useAuthorization: true, typeof(Parsalud.BusinessLayer.IAssemblyMarker).Assembly);
-app.MapStaticAssets();
 app.MapGet($"/css/{AppConstants.MAIN_CSS_FILENAME}", async ([FromServices] IStyleSheetService ssService, CancellationToken cancellationToken = default) =>
 {
+    
     var css = await ssService.GetBundleCssAsync(cancellationToken);
     if (css.IsSuccessWithData)
     {
@@ -126,6 +141,9 @@ app.MapGet($"/css/{AppConstants.MAIN_CSS_FILENAME}", async ([FromServices] IStyl
 
     return Results.Text("", "text/css");
 });
+
+app.MapGeneratedHubs(useAuthorization: true, typeof(Parsalud.BusinessLayer.IAssemblyMarker).Assembly);
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

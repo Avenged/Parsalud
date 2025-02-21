@@ -64,7 +64,12 @@ public partial class DynamicSection : ComponentBase
         { nameof(FaqListContext), typeof(FaqListContext) }
         // Agrega más componentes aquí según los que pueden llegar desde la base de datos.
     };
-    private static readonly string[] exclusions = ["bundle.min.css", "{src}", "{Src}"];
+    private static readonly string[] exclusions = [
+        "bundle.min.css", 
+        "{src}", 
+        "{Src}",
+        "Preview",
+        "Watch"];
 
     protected override async Task OnParametersSetAsync()
     {

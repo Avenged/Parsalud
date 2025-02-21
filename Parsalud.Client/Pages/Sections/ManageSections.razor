@@ -1,6 +1,5 @@
 ﻿@page "/Dashboard/Sections"
-@inject NavigationManager NM
-@inherits ManagerBase<ISectionService, ParsaludSection, SectionSearchCriteria>
+@inherits ManagerBase<ISectionService, ParsaludSection, ManageSectionRequest, SectionSearchCriteria>
 
 <PageTitle>Secciones - Dashboard Parsalud</PageTitle>
 
@@ -46,7 +45,7 @@
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
                     <div>
                         <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
-                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" />
+                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" Click="Reset" />
                     </div>
                     <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Success" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
                 </RadzenStack>

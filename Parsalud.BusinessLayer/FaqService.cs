@@ -14,13 +14,13 @@ public class FaqService(
     private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
     private readonly IUserService _userService = userService;
 
-    public async Task<BusinessResponse> CreateAsync(ManageFaqRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<ParsaludFaq>> CreateAsync(ManageFaqRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            dbContext.Add(new Faq
+            var entity = new Faq
             {
                 Id = Guid.NewGuid(),
                 Question = request.Question,
@@ -28,37 +28,52 @@ public class FaqService(
                 Hidden = request.Hidden,
                 CreatedAt = DateTime.Now,
                 CreatedById = _userService.Id,
-            });
+            };
+            dbContext.Add(entity);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            return BusinessResponse.Success();
+            return BusinessResponse.Success(new ParsaludFaq
+            {
+                Id = entity.Id,
+                Answer = entity.Answer,
+                Question = entity.Question,
+                Hidden = entity.Hidden,
+                CreatedAt = entity.CreatedAt
+            });
         }
         catch (Exception)
         {
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            return BusinessResponse.Error<ParsaludFaq>("Ocurrió un error inesperado");
         }
     }
 
-    public async Task<BusinessResponse> UpdateAsync(Guid id, ManageFaqRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<ParsaludFaq>> UpdateAsync(Guid id, ManageFaqRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var post = await dbContext.Faqs.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
+            var entity = await dbContext.Faqs.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
 
-            post.Answer = request.Answer;
-            post.Question = request.Question;
-            post.Hidden = request.Hidden;
-            post.UpdatedAt = DateTime.Now;
-            post.UpatedById = _userService.Id;
+            entity.Answer = request.Answer;
+            entity.Question = request.Question;
+            entity.Hidden = request.Hidden;
+            entity.UpdatedAt = DateTime.Now;
+            entity.UpatedById = _userService.Id;
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            return BusinessResponse.Success();
+            return BusinessResponse.Success(new ParsaludFaq
+            {
+                Id = entity.Id,
+                Answer = entity.Answer,
+                Question = entity.Question,
+                Hidden = entity.Hidden,
+                CreatedAt = entity.CreatedAt
+            });
         }
         catch (Exception)
         {
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            return BusinessResponse.Error<ParsaludFaq>("Ocurrió un error inesperado");
         }
     }
 

@@ -1,13 +1,16 @@
 ﻿using Parsalud.Client.Components;
 using Parsalud.BusinessLayer.Abstractions;
-using Radzen;
 
 namespace Parsalud.Client.Pages.Posts;
 
-public partial class ManagePost : BaseAbm<Guid>
+public partial class ManagePost : BaseAbm<PostModel, IPostService, ParsaludPost, ManagePostRequest, PostSearchCriteria>
 {
-    public const string MAIN_PATH = "Dashboard/Posts";
-    public PostModel Model { get; set; } = new();
+    public ManagePost() : base("Dashboard/Posts")
+    {    
+    }
+
+    private int i;
+
     public ParsaludPostCategory[] Categories { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
@@ -18,34 +21,19 @@ public partial class ManagePost : BaseAbm<Guid>
         {
             Categories = response.Data;
         }
+
+        await base.OnInitializedAsync();
     }
 
-    public async Task Submit()
+    private void CategoryChanged()
     {
-        if (AbmAction == AbmAction.Create)
-        {
-            if (!await DS.ConfirmCreationAsync())
-            {
-                return;
-            }
-
-            var response = await Service.CreateAsync(Model.ToRequest());
-        }
-        else if (AbmAction == AbmAction.Update)
-        {
-            if (!await DS.ConfirmDeletionAsync())
-            {
-                return;
-            }
-
-            var response = await Service.UpdateAsync(Id, Model.ToRequest());
-        }
-
-        NM.NavigateTo(MAIN_PATH);
+        var cat = Categories.FirstOrDefault(x => x.Id == Model.PostCategoryId);
+        Model.PostCategory = cat?.Name;
+        Increment();
     }
 
-    public void Discard()
+    private void Increment()
     {
-        NM.NavigateTo(MAIN_PATH);
+        i++;
     }
 }

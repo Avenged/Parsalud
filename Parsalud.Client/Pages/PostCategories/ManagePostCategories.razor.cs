@@ -3,13 +3,9 @@ using Parsalud.Client.Components;
 
 namespace Parsalud.Client.Pages.PostCategories;
 
-public partial class ManagePostCategories : ManagerBase<IPostCategoryService, ParsaludPostCategory, PostCategorySearchCriteria>
+public partial class ManagePostCategories : ManagerBase<IPostCategoryService, ParsaludPostCategory, ManagePostCategoryRequest, PostCategorySearchCriteria>
 {
-    public const string NEW_ITEM_TEXT = "Nueva categoría";
-    public const string CREATE_PATH = "Dashboard/PostCategory/Create";
-
-    public void CreateNew()
-    {
-        NM.NavigateTo(CREATE_PATH);
+    public ManagePostCategories() : base("Dashboard/PostCategory/Create", "Nueva categoría")
+    {  
     }
 }

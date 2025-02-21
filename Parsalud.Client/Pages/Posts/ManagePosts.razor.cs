@@ -3,13 +3,21 @@ using Parsalud.Client.Components;
 
 namespace Parsalud.Client.Pages.Posts;
 
-public partial class ManagePosts : ManagerBase<IPostService, ParsaludPost, PostSearchCriteria>
+public partial class ManagePosts : ManagerBase<IPostService, ParsaludPost, ManagePostRequest, PostSearchCriteria>
 {
-    public const string NEW_ITEM_TEXT = "Nuevo artículo";
-    public const string CREATE_PATH = "Dashboard/Post/Create";
+    public ManagePosts() : base("Dashboard/Post/Create", "Nuevo artículo")
+    {  
+    }
 
-    public void CreateNew()
+    public ParsaludPostCategory[] Categories { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
     {
-        NM.NavigateTo(CREATE_PATH);
+        var response = await PostCategoryService.GetByCriteriaAsync(new PostCategorySearchCriteria());
+
+        if (response.IsSuccessWithData)
+        {
+            Categories = response.Data;
+        }
     }
 }

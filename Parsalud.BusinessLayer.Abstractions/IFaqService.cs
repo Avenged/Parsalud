@@ -3,9 +3,6 @@
 namespace Parsalud.BusinessLayer.Abstractions;
 
 [GenerateClient]
-public interface IFaqService : IManagerServiceBase<ParsaludFaq, FaqSearchCriteria>
+public interface IFaqService : IManagerServiceBase<ParsaludFaq, ManageFaqRequest, FaqSearchCriteria>
 {
-    Task<BusinessResponse> CreateAsync(ManageFaqRequest request, CancellationToken cancellationToken = default);
-    Task<BusinessResponse<ParsaludFaq>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<BusinessResponse> UpdateAsync(Guid id, ManageFaqRequest request, CancellationToken cancellationToken = default);
 }

@@ -61,7 +61,7 @@ public class StyleSheetService(
         }
     }
 
-    public async Task<BusinessResponse> UpdateAsync(Guid id, ManageStyleSheetRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<ParsaludStyleSheet>> UpdateAsync(Guid id, ManageStyleSheetRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -86,11 +86,16 @@ public class StyleSheetService(
             await dbContext.SaveChangesAsync(cancellationToken);
 
             await _cache.RemoveByTagAsync(CacheTags.StyleSheets, token: cancellationToken);
-            return BusinessResponse.Success();
+            return BusinessResponse.Success(new ParsaludStyleSheet
+            {
+                Id = entity.Id,
+                Content = entity.Content,
+                FileName = entity.FileName,
+            });
         }
         catch (Exception)
         {
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            return BusinessResponse.Error<ParsaludStyleSheet>("Ocurrió un error inesperado");
         }
     }
 

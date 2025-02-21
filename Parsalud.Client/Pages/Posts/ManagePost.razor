@@ -1,11 +1,11 @@
 ﻿@page "/Dashboard/Post/Create"
 @page "/Dashboard/Post/{Id:guid}/Update"
 @page "/Dashboard/Post/{Id:guid}/View"
+@using System.Web
 
-@inject IPostService Service
 @inject IPostCategoryService PostCategoryService
 
-@inherits BaseAbm<Guid>
+@inherits BaseAbm<PostModel, IPostService, ParsaludPost, ManagePostRequest, PostSearchCriteria>
 
 <PageTitle>@Action("Nuevo", "Editar", "Ver") artículo - Dashboard Parsalud</PageTitle>
 
@@ -16,7 +16,7 @@
             <RadzenRow>
                 <RadzenColumn SizeMD="6">
                     <RadzenFormField class="rz-w-100" Text="Título">
-                        <RadzenTextBox Name=@nameof(Model.Title) @bind-Value=@Model.Title />
+                        <RadzenTextBox Name=@nameof(Model.Title) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.Title />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.Title) Text="Título es requerido" />
                 </RadzenColumn>
@@ -24,6 +24,7 @@
                     <RadzenFormField class="rz-w-100" Text="Categoría">
                         <RadzenDropDown TValue="Guid?"
                                         Data="Categories"
+                                        ReadOnly="@ReadOnly"
                                         ValueProperty=@nameof(ParsaludPostCategory.Id)
                                         TextProperty=@nameof(ParsaludPostCategory.Name)
                                         Name=@nameof(Model.PostCategoryId)
@@ -32,6 +33,7 @@
                                         FilterAsYouType="true"
                                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                         FilterOperator="StringFilterOperator.Contains"
+                                        Change="CategoryChanged"
                                         @bind-Value=@Model.PostCategoryId />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.PostCategoryId) Text="Categoría es requerida" />
@@ -39,21 +41,49 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn SizeMD="12">
+                    <RadzenFormField class="rz-w-100" Text="Descripción">
+                        <RadzenTextBox Name=@nameof(Model.Description) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.Description />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component=@nameof(Model.Description) Text="Description es requerido" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn SizeMD="12">
                     <RadzenFormField class="rz-w-100" Text="Link de imágen">
-                        <RadzenTextBox Name=@nameof(Model.ImgSrc) @bind-Value=@Model.ImgSrc />
+                        <RadzenTextBox Name=@nameof(Model.ImgSrc) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.ImgSrc />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.ImgSrc) Text="Link de la imágen es requerido" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn SizeMD="12">
-                    <RadzenHtmlEditor Name=@nameof(Model.Content) @bind-Value=@Model.Content />
+                    <RadzenHtmlEditor Name=@nameof(Model.Content) Change="Increment" Disabled="@ReadOnly" @bind-Value=@Model.Content />
                     <RadzenRequiredValidator Component=@nameof(Model.Content) Text="El contenido del artículo no debe estar vacío" />
                 </RadzenColumn>
             </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn SizeMD="12">
+                    <RadzenTabs>
+                        <Tabs>
+                            <RadzenTabsItem Text="Vista 1">
+                                <iframe @key=@i src=@($"{NM.BaseUri}Preview/POST-PREVIEW?Title={Model.Title}&Description={Model.Description}&Category={Model.PostCategory}&Src={HttpUtility.UrlEncode(Model.ImgSrc)}") style="height:50vh;width:100%"></iframe>
+                            </RadzenTabsItem>
+                            <RadzenTabsItem Text="Vista 2">
+                                <iframe @key=@i src=@($"{NM.BaseUri}Preview/LATEST_POST_VIEW?Title={Model.Title}&Description={Model.Description}&Category={Model.PostCategory}&Src={HttpUtility.UrlEncode(Model.ImgSrc)}") style="height:50vh;width:100%"></iframe>
+                            </RadzenTabsItem>
+                            <RadzenTabsItem Text="Vista 3">
+                                <iframe @key=@i src=@($"{NM.BaseUri}Preview/POST_INDIVIDUAL_VISTA?Title={Model.Title}&Description={Model.Description}&Content={HttpUtility.UrlEncode(Model.Content)}&Category={Model.PostCategory}&Src={HttpUtility.UrlEncode(Model.ImgSrc)}") style="height:50vh;width:100%"></iframe>
+                            </RadzenTabsItem>
+                        </Tabs>
+                    </RadzenTabs>
+                </RadzenColumn>
+            </RadzenRow>
             <RadzenStack Orientation="Orientation.Horizontal">
-                <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
-                <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text="Descartar" Icon="keyboard_return" Click="Discard" />
+                @if (!ReadOnly)
+                {
+                    <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
+                }
+                <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text=@(ReadOnly ? "Volver" : "Descartar") Icon="keyboard_return" Click="Discard" />
             </RadzenStack>
         </RadzenStack>
     </RadzenTemplateForm>

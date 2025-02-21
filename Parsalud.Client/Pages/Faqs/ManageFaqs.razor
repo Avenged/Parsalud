@@ -1,5 +1,5 @@
 ﻿@page "/Dashboard/Faqs"
-@inherits ManagerBase<IFaqService, ParsaludFaq, FaqSearchCriteria>
+@inherits ManagerBase<IFaqService, ParsaludFaq, ManageFaqRequest, FaqSearchCriteria>
 
 <PageTitle>FAQs - Dashboard Parsalud</PageTitle>
 
@@ -24,7 +24,7 @@
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
                     <div>
                         <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
-                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" />
+                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" Click="Reset" />
                     </div>
                     <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Success" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
                 </RadzenStack>
@@ -42,8 +42,8 @@
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                             <RadzenText><b>@context.Question</b></RadzenText>
                             <RadzenStack Orientation="Orientation.Horizontal">
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" />
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" Link=@($"Dashboard/Faq/{context.Id}/View") />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" Link=@($"Dashboard/Faq/{context.Id}/Update") />
                                 <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" Click="@(x => Delete(context.Id))" />
                             </RadzenStack>
                         </RadzenStack>

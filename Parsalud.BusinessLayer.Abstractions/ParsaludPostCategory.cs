@@ -1,6 +1,6 @@
 ﻿namespace Parsalud.BusinessLayer.Abstractions;
 
-public class ParsaludPostCategory
+public class ParsaludPostCategory : IDtoBase
 {
     public required Guid Id { get; init; }
     public required string Name { get; init; }

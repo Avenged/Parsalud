@@ -2,9 +2,7 @@
 @page "/Dashboard/StyleSheet/{Id:guid}/Update"
 @page "/Dashboard/StyleSheet/{Id:guid}/View"
 
-@inject IStyleSheetService Service
-
-@inherits BaseAbm<Guid>
+@inherits BaseAbm<StyleSheetModel, IStyleSheetService, ParsaludStyleSheet, ManageStyleSheetRequest, StyleSheetSearchCriteria>
 
 <PageTitle>@Action("Nueva", "Editar", "Ver") hoja de estilo - Dashboard Parsalud</PageTitle>
 

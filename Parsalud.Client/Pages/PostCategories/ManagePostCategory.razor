@@ -2,9 +2,7 @@
 @page "/Dashboard/PostCategory/{Id:guid}/Update"
 @page "/Dashboard/PostCategory/{Id:guid}/View"
 
-@inject IPostCategoryService Service
-
-@inherits BaseAbm<Guid>
+@inherits BaseAbm<PostCategoryModel, IPostCategoryService, ParsaludPostCategory, ManagePostCategoryRequest, PostCategorySearchCriteria>
 
 <PageTitle>@Action("Nueva", "Editar", "Ver") categoría - Dashboard Parsalud</PageTitle>
 
@@ -15,14 +13,17 @@
             <RadzenRow>
                 <RadzenColumn SizeMD="6">
                     <RadzenFormField class="rz-w-100" Text="Nombre">
-                        <RadzenTextBox Name=@nameof(Model.Name) @bind-Value=@Model.Name />
+                        <RadzenTextBox Name=@nameof(Model.Name) ReadOnly="@ReadOnly" @bind-Value=@Model.Name />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.Name) Text="Nombre es requerido" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenStack Orientation="Orientation.Horizontal">
-                <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
-                <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text="Descartar" Icon="keyboard_return" Click="Discard" />
+                @if (!ReadOnly)
+                {
+                    <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
+                }
+                <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text=@(ReadOnly ? "Volver" : "Descartar") Icon="keyboard_return" Click="Discard" />
             </RadzenStack>
         </RadzenStack>
     </RadzenTemplateForm>

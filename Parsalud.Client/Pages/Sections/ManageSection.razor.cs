@@ -4,14 +4,15 @@ using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.Client.Pages.StyleSheets;
 using System.Text;
 using Radzen.Blazor.Rendering;
-using Radzen.Blazor;
 
 namespace Parsalud.Client.Pages.Sections;
 
-public partial class ManageSection : BaseAbm<Guid>
+public partial class ManageSection : BaseAbm<SectionModel, ISectionService, ParsaludSection, ManageSectionRequest, SectionSearchCriteria>
 {
-    public const string MAIN_PATH = "Dashboard/Sections";
-    public SectionModel Model { get; set; } = new();
+    public ManageSection() : base("Dashboard/Sections")
+    {
+    }
+
     public List<ParsaludStyleSheet> StyleSheets { get; set; } = [];
     public ParsaludStyleSheet? StyleSheet { get; set; }
     public StyleSheetModel? StyleSheetModel { get; set; }
@@ -20,7 +21,6 @@ public partial class ManageSection : BaseAbm<Guid>
     public ButtonWithTooltip? Button { get; set; }
     public string? ErrorMsg { get; set; }
     public bool CreatingStyleSheet { get; set; }
-    public RadzenTemplateForm<SectionModel> Form { get; set; } = null!;
     public bool ParametrosRutaSelected { get; set; }
     public Guid LiveServerId { get; set; }
 
@@ -138,37 +138,7 @@ public partial class ManageSection : BaseAbm<Guid>
         await ManualSubmit();
     }
 
-    public async Task ManualSubmit()
-    {
-        if (!Form.IsValid)
-        {
-            Form.EditContext.Validate();
-            return;
-        }
-
-        var response = await GeneralSubmit(keep: true);
-
-        if (response?.IsSuccess ?? false)
-        {
-            NS.Notify(Radzen.NotificationSeverity.Success, "Cambios guardados");
-        }
-        else
-        {
-            NS.Notify(Radzen.NotificationSeverity.Warning, summary: "No pudimos guardar los cambios", detail: response?.Message);
-        }
-
-        if (AbmAction == AbmAction.Create && (response?.IsSuccessWithData ?? false))
-        {
-            NM.NavigateTo($"Dashboard/Section/{response.Data.Id}/Update");
-        }
-    }
-
-    public async Task Submit()
-    {
-        await GeneralSubmit(keep: false);
-    }
-
-    private async Task<BusinessResponse<ParsaludSection>?> GeneralSubmit(bool keep)
+    protected override async Task<BusinessResponse<ParsaludSection>?> GeneralSubmit(bool keep)
     {
         if (ReadOnly)
         {
@@ -183,26 +153,7 @@ public partial class ManageSection : BaseAbm<Guid>
             return null;
         }
 
-        BusinessResponse<ParsaludSection>? response;
-        if (AbmAction == AbmAction.Create)
-        {
-            response = await Service.CreateAsync(Model.ToRequest());
-        }
-        else if (AbmAction == AbmAction.Update)
-        {
-            response = await Service.UpdateAsync(Id, Model.ToRequest());
-        }
-        else
-        {
-            throw new NotImplementedException();
-        }
-
-        if (!keep)
-        {
-            NM.NavigateTo(MAIN_PATH);
-        }
-
-        return response;
+        return await base.GeneralSubmit(keep);
     }
 
     private async Task<bool?> SubmitStyleSheetAsync()
@@ -279,11 +230,6 @@ public partial class ManageSection : BaseAbm<Guid>
             Html = Model.Content,
         });
         iframei++;
-    }
-
-    public void Discard()
-    {
-        NM.NavigateTo(MAIN_PATH);
     }
 
     private void SourceChange(string? value)

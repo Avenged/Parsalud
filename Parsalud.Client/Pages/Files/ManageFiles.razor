@@ -1,0 +1,57 @@
+﻿@page "/Dashboard/Files"
+@inherits ManagerBase<IFileService, ParsaludFile, ManageFileRequest, FileSearchCriteria>
+
+@inject NavigationManager NM
+
+<PageTitle>Archivos - Dashboard Parsalud</PageTitle>
+
+<RadzenStack>
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">Administrar archivos</RadzenText>
+        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H5">Buscar archivos</RadzenText>
+        <RadzenTemplateForm TItem="ManageFiles" Data="this" Submit="Submit">
+            <RadzenStack>
+                <RadzenRow>
+                    <RadzenColumn SizeMD="12">
+                        <RadzenFormField class="rz-w-100" Text="Nombre">
+                            <RadzenTextBox @bind-Value=@Criteria.FileName />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                    <div>
+                        <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
+                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" Click="Reset" />
+                    </div>
+                    <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Success" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenTemplateForm>
+    </RadzenCard>
+
+    @if (Items is not null)
+    {
+        <RadzenCard>
+            @if (Items.Length > 0)
+            {
+                <RadzenDataList TItem="ParsaludFile" Data="Items" AllowVirtualization="true">
+                    <Template>
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                            <div class="d-flex align-items-center gap-2">
+                                <RadzenImage Path="@Path.Combine(NM.BaseUri, "uploads", context.FileName)" Style="height:50px;width:50px;object-fit:cover" />
+                                <a href="@Path.Combine(NM.BaseUri, "uploads", context.FileName)" target="_blank"><b>@context.FileName</b></a>
+                            </div>
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" Click="@(x => DeleteByFileName(context.FileName))" />
+                            </RadzenStack>
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataList>
+            }
+            else
+            {
+                <RadzenText>No se encontraron resultados</RadzenText>
+            }
+        </RadzenCard>
+    }
+</RadzenStack>

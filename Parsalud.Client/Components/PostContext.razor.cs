@@ -46,6 +46,8 @@ public partial class PostContext : ComponentBase
 
         attributes.Add("Id", Post?.Id.ToString() ?? "");
         attributes.Add("Title", Post?.Title ?? "");
+        attributes.Add("Src", Post?.ImgSrc ?? "");
+        attributes.Add("Description", Post?.Description ?? "");
         attributes.Add("Content", Post?.Content ?? "");
         attributes.Add("Category", Post?.PostCategory ?? "");
         attributes.Add("CreatedAt", Post?.CreatedAt.ToString(formato, cultura) ?? "");

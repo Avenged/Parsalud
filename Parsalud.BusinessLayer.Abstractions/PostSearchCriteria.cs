@@ -1,4 +1,7 @@
-﻿namespace Parsalud.BusinessLayer.Abstractions;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace Parsalud.BusinessLayer.Abstractions;
 
 public class PostSearchCriteria
 {
@@ -10,4 +13,15 @@ public class PostSearchCriteria
     public Guid[]? CategoryIds { get; set; }
     public int? Page { get; set; }
     public int? Size { get; set; }
+
+    [NotMapped]
+    [JsonIgnore]
+    public IEnumerable<Guid>? EnumCategoryIds 
+    { 
+        get => CategoryIds; 
+        set
+        {
+            CategoryIds = value?.ToArray();
+        }
+    }
 }

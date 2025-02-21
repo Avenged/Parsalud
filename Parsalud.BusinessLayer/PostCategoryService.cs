@@ -3,8 +3,6 @@ using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess.Models;
 using Parsalud.DataAccess;
 using VENative.Blazor.ServiceGenerator.Attributes;
-using Microsoft.EntityFrameworkCore.Internal;
-using Azure.Core;
 
 namespace Parsalud.BusinessLayer;
 
@@ -16,47 +14,62 @@ public class PostCategoryService(
     private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
     private readonly IUserService _userService = userService;
 
-    public async Task<BusinessResponse> CreateAsync(ManagePostCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<ParsaludPostCategory>> CreateAsync(ManagePostCategoryRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            dbContext.Add(new PostCategory
+            var entity = new PostCategory
             {
                 Id = Guid.NewGuid(),
                 Name = request.Name,
                 CreatedAt = DateTime.Now,
                 CreatedById = _userService.Id,
-            });
+            };
+            dbContext.Add(entity);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            return BusinessResponse.Success();
+            return BusinessResponse.Success(new ParsaludPostCategory
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                PostsCount = entity.Posts.Count,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt,
+            });
         }
         catch (Exception)
         {
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            return BusinessResponse.Error<ParsaludPostCategory>("Ocurrió un error inesperado");
         }
     }
 
-    public async Task<BusinessResponse> UpdateAsync(Guid id, ManagePostCategoryRequest request, CancellationToken cancellationToken = default)
+    public async Task<BusinessResponse<ParsaludPostCategory>> UpdateAsync(Guid id, ManagePostCategoryRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var post = await dbContext.PostCategories.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
+            var entity = await dbContext.PostCategories.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
 
-            post.Name = request.Name;
-            post.UpdatedAt = DateTime.Now;
-            post.UpatedById = _userService.Id;
+            entity.Name = request.Name;
+            entity.UpdatedAt = DateTime.Now;
+            entity.UpatedById = _userService.Id;
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            return BusinessResponse.Success();
+            return BusinessResponse.Success(new ParsaludPostCategory
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                PostsCount = entity.Posts.Count,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt,
+            });
         }
         catch (Exception)
         {
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            return BusinessResponse.Error<ParsaludPostCategory>("Ocurrió un error inesperado");
         }
     }
 
@@ -66,11 +79,17 @@ public class PostCategoryService(
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var post = await dbContext.PostCategories.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
+            var entity = await dbContext.PostCategories.Include(x => x.Posts)
+                .FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
 
-            post.Deleted = true;
-            post.UpdatedAt = DateTime.Now;
-            post.UpatedById = _userService.Id;
+            if (entity.Posts.Count > 0)
+            {
+                return BusinessResponse.Error("La categoría no puede eliminarse porque está siendo usada en uno o más posts.");
+            }
+
+            entity.Deleted = true;
+            entity.UpdatedAt = DateTime.Now;
+            entity.UpatedById = _userService.Id;
 
             await dbContext.SaveChangesAsync(cancellationToken);
             return BusinessResponse.Success();

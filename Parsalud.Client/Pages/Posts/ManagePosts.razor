@@ -1,5 +1,7 @@
 ﻿@page "/Dashboard/Posts"
-@inherits ManagerBase<IPostService, ParsaludPost, PostSearchCriteria>
+
+@inject IPostCategoryService PostCategoryService
+@inherits ManagerBase<IPostService, ParsaludPost, ManagePostRequest, PostSearchCriteria>
 
 <PageTitle>Artículos - Dashboard Parsalud</PageTitle>
 
@@ -10,16 +12,31 @@
         <RadzenTemplateForm TItem="ManagePosts" Data="this" Submit="Submit">
             <RadzenStack>
                 <RadzenRow>
-                    <RadzenColumn SizeMD="4">
+                    <RadzenColumn SizeMD="6">
                         <RadzenFormField class="rz-w-100" Text="Título">
                             <RadzenTextBox @bind-Value=@Criteria.Title />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenFormField class="rz-w-100" Text="Categoría">
+                            <RadzenDropDown Data="Categories"
+                                            ValueProperty=@nameof(ParsaludPostCategory.Id)
+                                            TextProperty=@nameof(ParsaludPostCategory.Name)
+                                            Name=@nameof(Criteria.CategoryIds)
+                                            AllowClear="true"
+                                            Multiple="true"
+                                            AllowFiltering="true"
+                                            FilterAsYouType="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            FilterOperator="StringFilterOperator.Contains"
+                                            @bind-Value=@Criteria.EnumCategoryIds />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
                     <div>
                         <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
-                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" />
+                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" Click="Reset" />
                     </div>
                     <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Success" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
                 </RadzenStack>
@@ -37,8 +54,8 @@
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                             <RadzenText><b>@context.Title</b></RadzenText>
                             <RadzenStack Orientation="Orientation.Horizontal">
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" Link=@($"Dashboard/Posts/{context.Id}/View") />
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" Link=@($"Dashboard/Posts/{context.Id}/Update") />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" Link=@($"Dashboard/Post/{context.Id}/View") />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" Link=@($"Dashboard/Post/{context.Id}/Update") />
                                 <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" Click="@(x => Delete(context.Id))" />
                             </RadzenStack>
                         </RadzenStack>

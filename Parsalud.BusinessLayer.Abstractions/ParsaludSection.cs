@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Parsalud.BusinessLayer.Abstractions;
 
-public class ParsaludSection
+public class ParsaludSection : IDtoBase
 {
     public required Guid Id { get; init; }
     public required string Name { get; init; }

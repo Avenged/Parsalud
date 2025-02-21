@@ -3,9 +3,6 @@
 namespace Parsalud.BusinessLayer.Abstractions;
 
 [GenerateClient]
-public interface IPostCategoryService : IManagerServiceBase<ParsaludPostCategory, PostCategorySearchCriteria>
+public interface IPostCategoryService : IManagerServiceBase<ParsaludPostCategory, ManagePostCategoryRequest, PostCategorySearchCriteria>
 {
-    Task<BusinessResponse> CreateAsync(ManagePostCategoryRequest request, CancellationToken cancellationToken = default);
-    Task<BusinessResponse<ParsaludPostCategory>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<BusinessResponse> UpdateAsync(Guid id, ManagePostCategoryRequest request, CancellationToken cancellationToken = default);
 }

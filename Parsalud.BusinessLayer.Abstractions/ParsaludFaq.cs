@@ -1,6 +1,6 @@
 ﻿namespace Parsalud.BusinessLayer.Abstractions;
 
-public class ParsaludFaq
+public class ParsaludFaq : IDtoBase
 {
     public required Guid Id { get; init; }
     public required string Question { get; init; }

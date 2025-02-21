@@ -279,6 +279,9 @@ namespace Parsalud.DataAccess.Migrations
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("Hidden")
                         .HasColumnType("bit");
 

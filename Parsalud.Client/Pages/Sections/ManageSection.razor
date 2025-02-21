@@ -2,10 +2,9 @@
 @page "/Dashboard/Section/{Id:guid}/Update"
 @page "/Dashboard/Section/{Id:guid}/View"
 
-@inject ISectionService Service
 @inject IStyleSheetService StyleSheetService
 
-@inherits BaseAbm<Guid>
+@inherits BaseAbm<SectionModel, ISectionService, ParsaludSection, ManageSectionRequest, SectionSearchCriteria>
 
 @using Radzen.Blazor.Rendering
 
@@ -43,14 +42,14 @@
                                          @bind-Selected=@ParametrosRutaSelected>
                         <RadzenAlert AlertStyle="AlertStyle.Info" Text="Asignar parámetros convertirá su sección en una página. La url debe coincidir con los parámetros asignados acá para poder ser encontrada por el router." />
                         <RadzenStack Gap="1rem">
-                            <RadzenTextBox Placeholder="Página" @bind-Value=@Model.Page />
+                            <RadzenTextBox Placeholder="Página" ReadOnly=@ReadOnly @bind-Value=@Model.Page />
                             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Wrap="FlexWrap.Wrap">
-                                <RadzenTextBox Placeholder="Param1" @bind-Value=@Model.Param1 />
-                                <RadzenTextBox Placeholder="Param2" @bind-Value=@Model.Param2 />
-                                <RadzenTextBox Placeholder="Param3" @bind-Value=@Model.Param3 />
-                                <RadzenTextBox Placeholder="Param4" @bind-Value=@Model.Param4 />
-                                <RadzenTextBox Placeholder="Param5" @bind-Value=@Model.Param5 />
-                                <RadzenTextBox Placeholder="Param6" @bind-Value=@Model.Param6 />
+                                <RadzenTextBox Placeholder="Param1" ReadOnly=@ReadOnly @bind-Value=@Model.Param1 />
+                                <RadzenTextBox Placeholder="Param2" ReadOnly=@ReadOnly @bind-Value=@Model.Param2 />
+                                <RadzenTextBox Placeholder="Param3" ReadOnly=@ReadOnly @bind-Value=@Model.Param3 />
+                                <RadzenTextBox Placeholder="Param4" ReadOnly=@ReadOnly @bind-Value=@Model.Param4 />
+                                <RadzenTextBox Placeholder="Param5" ReadOnly=@ReadOnly @bind-Value=@Model.Param5 />
+                                <RadzenTextBox Placeholder="Param6" ReadOnly=@ReadOnly @bind-Value=@Model.Param6 />
                             </RadzenStack>
                         </RadzenStack>
                     </RadzenAccordionItem>

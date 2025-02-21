@@ -1,0 +1,42 @@
+﻿@page "/Dashboard/File/Create"
+@page "/Dashboard/File/{Id:guid}/Update"
+@page "/Dashboard/File/{Id:guid}/View"
+
+@inherits BaseAbm<FileModel, IFileService, ParsaludFile, ManageFileRequest, FileSearchCriteria>
+
+<PageTitle>@Action("Subir", "Editar", "Ver") archivo - Dashboard Parsalud</PageTitle>
+
+<RadzenCard>
+    <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Subir", "Editar", "Ver") archivo</RadzenText>
+    <RadzenTemplateForm TItem="FileModel" Data="Model" Submit="Submit">
+        <RadzenStack>
+            <RadzenRow class="mb-2">
+                <RadzenColumn SizeMD="12">
+                    <RadzenStack Gap="5">
+                        <RadzenUpload style="width: fit-content;"
+                                      Accept="image/*"
+                                      Multiple="false"
+                                      Url="upload/single"
+                                      ChooseText="Seleccionar de mi dispositivo"
+                                      Progress="@((args) => progress = args.Progress)"
+                                      Complete="Complete"
+                                      Error="Error" />
+
+                        <p>Progreso de subida: @progress%</p>
+                    </RadzenStack>
+                    @* <RadzenFormField class="rz-w-100" Text="Nombre">
+                        <RadzenTextBox Name=@nameof(Model.FileName) ReadOnly="@ReadOnly" @bind-Value=@Model.FileName />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component=@nameof(Model.FileName) Text="Nombre es requerido" /> *@
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenStack Orientation="Orientation.Horizontal">
+@*                 @if (!ReadOnly)
+                {
+                    <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
+                } *@
+                <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text=@(ReadOnly ? "Volver" : "Descartar") Icon="keyboard_return" Click="Discard" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenCard>

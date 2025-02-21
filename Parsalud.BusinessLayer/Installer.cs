@@ -19,6 +19,7 @@ public static class Installer
             });
         });
 
+        services.AddTransient<IFileService, FileService>();
         services.AddTransient<IStyleSheetService, StyleSheetService>();
         services.AddTransient<ISectionService, SectionService>();
         services.AddTransient<IFaqService, FaqService>();

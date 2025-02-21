@@ -13,9 +13,11 @@
             {
                 Dictionary<string, object> attrs = new();
                 attrs.Add("Id", post.Id.ToString());
-                attrs.Add("Title", post.Title.ToString());
-                attrs.Add("Content", post.Content.ToString());
-                attrs.Add("Category", post.PostCategory.ToString());
+                attrs.Add("Title", post.Title);
+                attrs.Add("Src", post.ImgSrc);
+                attrs.Add("Description", post.Description);
+                attrs.Add("Content", post.Content);
+                attrs.Add("Category", post.PostCategory);
                 attrs.Add("CategoryId", post.PostCategoryId.ToString());
                 attrs.Add("CreatedAt", post.CreatedAt.ToString(formato, cultura));
                 <DynamicSection Attributes="@attrs" Code="@View" />

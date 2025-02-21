@@ -1,16 +1,25 @@
-﻿@page "/Preview/{Code}/{LiveServerId:guid}"
+﻿@page "/Preview/{Code}"
+@page "/Preview/{Code}/{LiveServerId:guid}"
 
 @using Parsalud.Components.Layout
+@using Parsalud.Extensions
 @layout EmptyLayout
+@inject NavigationManager NM
 
-<DynamicSection Code=@Code LiveServerId=@LiveServerId />
+<DynamicSection Attributes="attributes" Code=@Code LiveServerId=@LiveServerId />
 
 @code {
+    private Dictionary<string, object> attributes = new();
+
     [Parameter]
     [EditorRequired]
     public required string Code { get; set; }
 
     [Parameter]
-    [EditorRequired]
-    public required Guid LiveServerId { get; set; }
+    public Guid? LiveServerId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        attributes = NM.GetQueryParameters();
+    }
 }

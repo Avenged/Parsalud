@@ -1,15 +1,136 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
+using Parsalud.BusinessLayer.Abstractions;
 using Radzen;
-using System.Web;
+using Radzen.Blazor;
 
 namespace Parsalud.Client.Components;
 
-public abstract class BaseAbm<Tkey> : BaseAbm, IDisposable
+public abstract class BaseAbm<TModel, TService, TDto, TRequest, TCriteria>(string mainPath) : 
+    BaseAbm, 
+    IDisposable
+    where TModel : class, IModelBase<TModel, TRequest, TDto>, new()
+    where TService : class, IManagerServiceBase<TDto, TRequest, TCriteria>
+    where TDto : class, IDtoBase
+    where TRequest : class
+    where TCriteria : class, new()
 {
+    protected RadzenTemplateForm<TModel> Form { get; set; } = default!;
+
+    protected TModel Model { get; set; } = new();
+
+    protected string MainPath { get; } = mainPath;
+
+    [Inject]
+    protected TService Service { get; set; } = default!;
+
     [Parameter]
-    public Tkey? Id { get; set; }
+    public Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id == Guid.Empty)
+        {
+            return;
+        }
+
+        var response = await Service.GetByIdAsync(Id);
+
+        if (response.IsSuccessWithData)
+        {
+            Model = Model.FromDto(response.Data);
+        }
+    }
+
+    public async Task Submit()
+    {
+        await GeneralSubmit(keep: false);
+    }
+
+    public async Task ManualSubmit()
+    {
+        if (!Form.IsValid)
+        {
+            Form.EditContext.Validate();
+            NS.Notify(NotificationSeverity.Warning, "Revise los datos en su formulario");
+            return;
+        }
+
+        var response = await GeneralSubmit(keep: true);
+
+        if (response?.IsSuccess ?? false)
+        {
+            NS.Notify(NotificationSeverity.Success, "Cambios guardados");
+        }
+        else
+        {
+            NS.Notify(NotificationSeverity.Warning, summary: "No pudimos guardar los cambios", detail: response?.Message);
+        }
+
+        if (AbmAction == AbmAction.Create && (response?.IsSuccessWithData ?? false))
+        {
+            var newPath = NM.Uri.Replace("/Create", $"/{response.Data.Id}/Update");
+            NM.NavigateTo(newPath);
+        }
+    }
+
+    protected virtual async Task<BusinessResponse<TDto>?> GeneralSubmit(bool keep)
+    {
+        if (ReadOnly)
+        {
+            return null;
+        }
+
+        if (!keep && AbmAction == AbmAction.Create && !await DS.ConfirmCreationAsync())
+        {
+            return null;
+        }
+        else if (!keep && AbmAction == AbmAction.Update && !await DS.ConfirmEditionAsync())
+        {
+            return null;
+        }
+
+        BusinessResponse<TDto>? response;
+        if (AbmAction == AbmAction.Create)
+        {
+            response = await Service.CreateAsync(Model.ToRequest());
+        }
+        else if (AbmAction == AbmAction.Update)
+        {
+            response = await Service.UpdateAsync(Id, Model.ToRequest());
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
+
+        if (!keep && response.IsSuccess)
+        {
+            NS.Notify(
+                severity: NotificationSeverity.Success,
+                summary: "Cambios guardados",
+                detail: "",
+                duration: TimeSpan.FromSeconds(5));
+
+            NM.NavigateTo(MainPath);
+        }
+        else if (!keep && !response.IsSuccess)
+        {
+            NS.Notify(
+                severity: NotificationSeverity.Warning,
+                summary: "No pudimos guardar los cambios",
+                detail: response.Message,
+                duration: TimeSpan.FromSeconds(10));
+        }
+
+        return response;
+    }
+
+    protected void Discard()
+    {
+        NM.NavigateTo(MainPath);
+    }
 
     public virtual void Dispose()
     {
@@ -41,9 +162,6 @@ public abstract class BaseAbm() : ComponentBase
 
     [Inject]
     protected NotificationService NS { get; set; } = null!;
-
-    //[Inject]
-    //protected IApplicationConfiguration AppConfig { get; set; } = null!;
 
     [Parameter]
     public AbmAction AbmAction { get; set; }
