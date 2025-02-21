@@ -18,8 +18,8 @@
                     </RadzenColumn>
                     <RadzenColumn SizeMD="12">
                         <div class="d-flex align-items-center gap-2" style="width:fit-content">
-                            <RadzenText Text="Bloqueo habilitado" />
-                            <RadzenCheckBox @bind-Value=@Criteria.LockoutEnabled />
+                            <RadzenText Text="Deshabilitado" />
+                            <RadzenCheckBox @bind-Value=@Criteria.IsDisabled />
                         </div>
                     </RadzenColumn>
                 </RadzenRow>
@@ -43,11 +43,22 @@
                 <RadzenDataList TItem="ParsaludUserDto" Data="Items" AllowVirtualization="true">
                     <Template>
                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-                            <RadzenText><b>@context.UserName</b></RadzenText>
+                            <div class="d-flex align-items-center gap-2">
+                                <RadzenText><b>@context.UserName</b></RadzenText>
+                                @if (context.IsDisabled)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Danger">Deshabilitado</RadzenBadge>
+                                }
+                            </div>
                             <RadzenStack Orientation="Orientation.Horizontal">
-@*                                 <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" Link=@($"Dashboard/User/{context.Id}/View") />
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" Link=@($"Dashboard/User/{context.Id}/Update") /> *@
-                                <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" Click="@(x => Delete(context.Id))" />
+                                @if (context.IsDisabled)
+                                {
+                                    <ButtonWithTooltip Variant="Variant.Text" ButtonStyle="ButtonStyle.Success" Icon="lock_open" TooltipText="Habilitar" Click="@(x => Unlock(context))" />
+                                }
+                                else
+                                {
+                                    <ButtonWithTooltip Variant="Variant.Text" ButtonStyle="ButtonStyle.Danger" Icon="lock" TooltipText="Deshabilitar" Click="@(x => Lock(context))" />
+                                }
                             </RadzenStack>
                         </RadzenStack>
                     </Template>

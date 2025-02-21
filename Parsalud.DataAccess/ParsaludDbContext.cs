@@ -33,6 +33,12 @@ public class ParsaludDbContext(DbContextOptions<ParsaludDbContext> options) : Id
     {
         base.OnModelCreating(builder);
 
+        builder.Entity<ParsaludUser>(x =>
+        {
+            x.Property(x => x.IsDisabled)
+                .HasDefaultValue(false);
+        });
+
         builder.Entity<Post>(x =>
         {
             x.HasOne(x => x.PostCategory)

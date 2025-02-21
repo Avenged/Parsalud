@@ -43,6 +43,7 @@ builder.Services.AddBusinessLayer(builder.Configuration);
 builder.Services.AddSecurity();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery();
+builder.Services.AddScoped<SignInManager<ParsaludUser>, CustomSignInManager<ParsaludUser>>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

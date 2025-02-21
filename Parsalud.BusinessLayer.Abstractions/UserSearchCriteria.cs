@@ -3,5 +3,5 @@
 public class UserSearchCriteria
 {
     public string? UserName { get; set; }
-    public bool? LockoutEnabled { get; set; }
+    public bool? IsDisabled { get; set; }
 }

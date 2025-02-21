@@ -2,5 +2,5 @@
 
 public class ManageUserRequest
 {
-    public required bool LockoutEnabled { get; init; }
+    public required bool IsDisabled { get; init; }
 }

@@ -33,14 +33,14 @@ public class UserManagerService(
             if (!string.IsNullOrWhiteSpace(criteria.UserName))
                 query = query.Where(x => EF.Functions.Like(x.UserName, $"%{criteria.UserName}%"));
 
-            if (criteria.LockoutEnabled.HasValue)
-                query = query.Where(x => x.LockoutEnabled == criteria.LockoutEnabled);
+            if (criteria.IsDisabled.HasValue)
+                query = query.Where(x => x.IsDisabled == criteria.IsDisabled);
 
             var entities = await query.Select(x => new ParsaludUserDto
             {
                 Id = x.Id,
                 UserName = x.UserName!,
-                LockoutEnabled = x.LockoutEnabled
+                IsDisabled = x.IsDisabled
             }).ToArrayAsync(cancellationToken);
 
             return BusinessResponse.Success(new Paginated<ParsaludUserDto[]>
@@ -68,7 +68,7 @@ public class UserManagerService(
                 {
                     Id = x.Id,
                     UserName = x.UserName!,
-                    LockoutEnabled = x.LockoutEnabled,
+                    IsDisabled = x.IsDisabled,
                 }).FirstOrDefaultAsync(cancellationToken);
 
             if (entity is null)
@@ -93,14 +93,14 @@ public class UserManagerService(
             var entity = await dbContext.Users
                 .FirstAsync(x => x.Id == id, cancellationToken);
 
-            entity.LockoutEnabled = request.LockoutEnabled;
+            entity.IsDisabled = request.IsDisabled;
 
             await dbContext.SaveChangesAsync(cancellationToken);
             return BusinessResponse.Success(new ParsaludUserDto
             {
                 Id = entity.Id,
                 UserName = entity.UserName!,
-                LockoutEnabled = entity.LockoutEnabled,
+                IsDisabled = entity.IsDisabled,
             });
         }
         catch (Exception)
