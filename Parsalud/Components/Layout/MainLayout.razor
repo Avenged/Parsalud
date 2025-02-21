@@ -7,16 +7,23 @@
         <main>
             <div class="top-row">
                 <img src="images/logo_parsalud_primary.webp" height="60" alt="Parsalud" title="Logo de Parsalud" role="img" />
-                <nav class="nav flex-row">
+                <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+                <nav class="nav flex-row nav-scrollable">
+
+                    <div class="nav-item close" onclick="document.querySelector('.navbar-toggler').click()">
+                        <img src="images/close.webp" height="16" />
+                        Cerrar
+                    </div>
+
                     <div class="nav-item">
                         <NavLink class="nav-link" href="" Match="NavLinkMatch.All" ActiveClass="nav-link-active" data-enhance-nav="false">
-                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Inicio
+                            <span aria-hidden="true"></span> Inicio
                         </NavLink>
                     </div>
 
                     <div class="nav-item">
                         <NavLink class="nav-link" href="dr/Nosotros" ActiveClass="nav-link-active" data-enhance-nav="false">
-                            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Nosotros
+                            <span aria-hidden="true"></span> Nosotros
                         </NavLink>
                     </div>
 
@@ -35,13 +42,13 @@
 
                     <div class="nav-item">
                         <NavLink class="nav-link" href="dr/HerramientasEnLinea" ActiveClass="nav-link-active" data-enhance-nav="false">
-                            <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Herramientas en línea
+                            <span aria-hidden="true"></span> Herramientas en línea
                         </NavLink>
                     </div>
 
                     <div class="nav-item">
                         <NavLink class="nav-link" href="dr/Publicaciones" ActiveClass="nav-link-active" data-enhance-nav="false">
-                            <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Publicaciones
+                            <span aria-hidden="true"></span> Publicaciones
                         </NavLink>
                     </div>
 
