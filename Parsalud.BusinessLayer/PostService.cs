@@ -190,6 +190,8 @@ public class PostService(
                 totalItems = await query.CountAsync(cancellationToken);
             }
 
+            query = query.OrderByDescending(x => x.CreatedAt);
+
             if (criteria.Page.HasValue)
             {
                 var size = criteria.Size.GetValueOrDefault(1);
@@ -215,7 +217,6 @@ public class PostService(
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
             })
-                .OrderByDescending(x => x.CreatedAt)
                 .ToArrayAsync(cancellationToken);
 
             if (!criteria.Page.HasValue && !criteria.Size.HasValue)

@@ -78,7 +78,11 @@ if (configuration.GetValue<bool>("UseHttpsRedirection"))
     app.UseHttpsRedirection();
 }
 
-app.UseAntiforgery();
+if (configuration.GetValue<bool>("UseAntiforgery"))
+{
+    app.UseAntiforgery();
+}
+
 app.MapStaticAssets();
 app.MapControllers();
 app.MapPost("/contactme", async (
