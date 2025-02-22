@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
@@ -9,10 +10,12 @@ namespace Parsalud.BusinessLayer;
 [GenerateHub]
 public class FaqService(
     IDbContextFactory<ParsaludDbContext> dbContextFactory,
-    IUserService userService) : IFaqService
+    IUserService userService,
+    ILogger<FaqService> logger) : IFaqService
 {
     private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
     private readonly IUserService _userService = userService;
+    private readonly ILogger<FaqService> _logger = logger;
 
     public async Task<BusinessResponse<ParsaludFaq>> CreateAsync(ManageFaqRequest request, CancellationToken cancellationToken = default)
     {
@@ -41,8 +44,9 @@ public class FaqService(
                 CreatedAt = entity.CreatedAt
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "No se pudo crear el FAQ");
             return BusinessResponse.Error<ParsaludFaq>("Ocurrió un error inesperado");
         }
     }
@@ -71,8 +75,9 @@ public class FaqService(
                 CreatedAt = entity.CreatedAt
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "No se pudo actualizar el FAQ");
             return BusinessResponse.Error<ParsaludFaq>("Ocurrió un error inesperado");
         }
     }
@@ -92,8 +97,9 @@ public class FaqService(
             await dbContext.SaveChangesAsync(cancellationToken);
             return BusinessResponse.Success();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "No se pudo eliminar el FAQ");
             return BusinessResponse.Error("Ocurrió un error inesperado");
         }
     }
@@ -121,8 +127,9 @@ public class FaqService(
 
             return BusinessResponse.Success(entity);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "No se pudo obtener el FAQ mediante id");
             return BusinessResponse.Error<ParsaludFaq>("Ocurrió un error inesperado");
         }
     }
@@ -164,8 +171,9 @@ public class FaqService(
                 TotalItems = entities.Length
             });
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "No se pudo obtener el FAQ mediante criterios de búsqueda");
             return BusinessResponse.Error<Paginated<ParsaludFaq[]>>("Ocurrió un error inesperado");
         }
     }
