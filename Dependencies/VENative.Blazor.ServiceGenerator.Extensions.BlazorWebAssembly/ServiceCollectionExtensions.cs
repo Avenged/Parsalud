@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
 
             if (implementationType is not null)
             {
-                services.AddTransient(interfaceType, implementationType);
+                services.AddSingleton(interfaceType, implementationType);
 #if DEBUG
                 Debug.WriteLine($"Registered '{interfaceType.Name}' with implementation '{implementationType.Name}'");
 #endif
