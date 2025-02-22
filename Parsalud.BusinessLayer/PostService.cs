@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
@@ -8,13 +9,18 @@ using ZiggyCreatures.Caching.Fusion;
 
 namespace Parsalud.BusinessLayer;
 
-[GenerateHub]
+[GenerateHub(useAuthentication: true)]
 public class PostService(
     IDbContextFactory<ParsaludDbContext> dbContextFactory,
     IUserService userService) : IPostService
 {
     private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
     private readonly IUserService _userService = userService;
+
+    public void OnInitialized(HubCallerContext context)
+    {
+        _userService.SetUser(context.User);
+    }
 
     public async Task<BusinessResponse<ParsaludPost>> CreateAsync(ManagePostRequest request, CancellationToken cancellationToken = default)
     {

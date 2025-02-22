@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
@@ -8,7 +9,7 @@ using ZiggyCreatures.Caching.Fusion;
 
 namespace Parsalud.BusinessLayer;
 
-[GenerateHub]
+[GenerateHub(useAuthentication: true)]
 public class SectionService(
     IDbContextFactory<ParsaludDbContext> dbContextFactory,
     IUserService userService,
@@ -20,6 +21,11 @@ public class SectionService(
     private readonly IFusionCache _cache = cache;
     private readonly IMemoryCache _memoryCache = memoryCache;
     private static readonly StringComparison comp = StringComparison.CurrentCultureIgnoreCase;
+
+    public void OnInitialized(HubCallerContext context)
+    {
+        _userService.SetUser(context.User);
+    }
 
     private static string? ConvertEmptyToNull(string? value)
     {

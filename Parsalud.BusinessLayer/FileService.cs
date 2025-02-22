@@ -5,7 +5,7 @@ using VENative.Blazor.ServiceGenerator.Attributes;
 
 namespace Parsalud.BusinessLayer;
 
-[GenerateHub]
+[GenerateHub(useAuthentication: true)]
 public class FileService : IFileService
 {
     private readonly string _appStoragePath;

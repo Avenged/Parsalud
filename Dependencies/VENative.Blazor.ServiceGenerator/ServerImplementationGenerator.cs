@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -118,6 +119,7 @@ public class ServerImplementationGenerator : IIncrementalGenerator
         var classAttributes = string.Join("\n", classSymbol.GetAttributesByNames(["AuthorizeAttribute", "AllowAnonymous"])
             .Select(x => x.GetAttributeInfo()));
         var interfaceDisplayString = GetFirstImplementedInterfaceName(classSymbol);
+        var hasInitializeMethod = HasInitializeMethod(classSymbol);
 
         var source =
         $$"""
@@ -149,6 +151,16 @@ public class ServerImplementationGenerator : IIncrementalGenerator
                 this._implementation = implementation;
             }
 
+            private void OnInitialized(HubCallerContext? context)
+            {
+                if (context is null) 
+                {
+                    return;
+                }
+
+                {{(hasInitializeMethod ? $"(({classSymbol.ToDisplayString()})_implementation).OnInitialized(context);" : null)}}
+            }
+
             private void EnsureAuthenticated(HubCallerContext? context)
             {
                 if (context is null) 
@@ -168,6 +180,13 @@ public class ServerImplementationGenerator : IIncrementalGenerator
         """;
 
         return source;
+    }
+
+    private static bool HasInitializeMethod(INamedTypeSymbol classSymbol)
+    {
+        return classSymbol.GetMembers()
+            .OfType<IMethodSymbol>()
+            .Any(m => m.Name == "OnInitialized");
     }
 
     private static string GetFirstImplementedInterfaceName(INamedTypeSymbol typeSymbol)
@@ -202,6 +221,10 @@ public class ServerImplementationGenerator : IIncrementalGenerator
         foreach (var method in methods)
         {
             if (method.IsStatic) continue;
+            if (method.Name.Equals("OnInitialized"))
+            {
+                continue;
+            }
 
             var methodError = false;
             var methodLocation = method.Locations.First();
@@ -251,88 +274,166 @@ public class ServerImplementationGenerator : IIncrementalGenerator
             var hasCancellationToken = method.Parameters
                 .Any(p => p.Type.ToDisplayString() == CANCELLATION_TOKEN);
 
+            var hasInitializeMethod = HasInitializeMethod(classSymbol);
+
             if (isAsync)
             {
-                if (isVoid)
-                {
-                    if (hasCancellationToken)
-                    {
-                        methodsBuilder.AppendLine(
-                        $$"""
-                            {{methodAttributes}}
-                            public async IAsyncEnumerable<bool> {{method.Name}}({{parametersWithoutToken}}{{paramsSeparator}}[EnumeratorCancellation] CancellationToken cancellationToken = default)
-                            {
-                                {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
-                                await _implementation.{{method.Name}}({{argumentsWithoutToken}}{{argsSeparator}}cancellationToken: cancellationToken);
-                                yield return true;
-                            }
-                        """);
-                    }
-                    else
-                    {
-                        methodsBuilder.AppendLine(
-                        $$"""
-                            {{methodAttributes}}
-                            public async Task {{method.Name}}({{parameters}})
-                            {
-                                {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
-                                await _implementation.{{method.Name}}({{arguments}});
-                            }
-                        """);
-                    }
-                }
-                else
-                {
-                    var genericType = returnType.Substring(returnType.IndexOf('<') + 1, returnType.Length - returnType.IndexOf('<') - 2);
-
-                    if (hasCancellationToken)
-                    {
-                        methodsBuilder.AppendLine(
-                        $$"""
-                            {{methodAttributes}}
-                            public async IAsyncEnumerable<{{genericType}}> {{method.Name}}({{parametersWithoutToken}}{{paramsSeparator}}[EnumeratorCancellation] CancellationToken cancellationToken = default)
-                            {
-                                {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
-                                yield return await _implementation.{{method.Name}}({{argumentsWithoutToken}}{{argsSeparator}}cancellationToken: cancellationToken);
-                            }
-                        """);
-                    }
-                    else
-                    {
-                        methodsBuilder.AppendLine(
-                        $$"""
-                            {{methodAttributes}}
-                            public async Task<{{genericType}}> {{method.Name}}({{parameters}})
-                            {
-                                {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
-                                return await _implementation.{{method.Name}}({{arguments}});
-                            }
-                        """);
-                    }
-                }
+                ManageAsyncMethod(
+                    useAuthentication,
+                    methodsBuilder,
+                    method,
+                    parameters,
+                    parametersWithoutToken,
+                    paramsSeparator,
+                    arguments,
+                    argumentsWithoutToken,
+                    argsSeparator,
+                    returnType,
+                    isVoid,
+                    methodAttributes,
+                    hasCancellationToken,
+                    hasInitializeMethod);
             }
             else
             {
-                if (isAsyncEnumerable)
-                {
-                    methodsBuilder.AppendLine(
-                    $$"""
-                        {{methodAttributes}}
-                        public async Task<{{returnType}}> {{method.Name}}({{parametersWithoutToken}}{{paramsSeparator}} CancellationToken cancellationToken = default)
-                        {
-                            {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
-                            return _implementation.{{method.Name}}({{argumentsWithoutToken}}{{argsSeparator}}cancellationToken: cancellationToken);
-                        }
-                    """);
-                }
-                else
-                {
-                    ReportError(context, "SG0001", "Synchronous methods are not supported.");
-                }
+                ManageSyncMethod(
+                    context,
+                    useAuthentication,
+                    methodsBuilder,
+                    method,
+                    parametersWithoutToken,
+                    paramsSeparator,
+                    argumentsWithoutToken,
+                    argsSeparator,
+                    returnType,
+                    isAsyncEnumerable,
+                    methodAttributes,
+                    hasInitializeMethod);
             }
         }
 
         return methodsBuilder.ToString();
+    }
+
+    private static void ManageSyncMethod(SourceProductionContext context, bool useAuthentication, StringBuilder methodsBuilder, IMethodSymbol method, string parametersWithoutToken, string? paramsSeparator, string argumentsWithoutToken, string? argsSeparator, string returnType, bool isAsyncEnumerable, string methodAttributes, bool hasInitializeMethod)
+    {
+        if (isAsyncEnumerable)
+        {
+            methodsBuilder.AppendLine(
+            $$"""
+                {{methodAttributes}}
+                public async Task<{{returnType}}> {{method.Name}}({{parametersWithoutToken}}{{paramsSeparator}} CancellationToken cancellationToken = default)
+                {
+                    {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
+                    {{(hasInitializeMethod ? "OnInitialized(Context);" : null)}}
+                    return _implementation.{{method.Name}}({{argumentsWithoutToken}}{{argsSeparator}}cancellationToken: cancellationToken);
+                }
+            """);
+        }
+        else
+        {
+            ReportError(context, "SG0001", "Synchronous methods are not supported.");
+        }
+    }
+
+    private static void ManageAsyncMethod(bool useAuthentication, StringBuilder methodsBuilder, IMethodSymbol method, string parameters, string parametersWithoutToken, string? paramsSeparator, string arguments, string argumentsWithoutToken, string? argsSeparator, string returnType, bool isVoid, string methodAttributes, bool hasCancellationToken, bool hasInitializeMethod)
+    {
+        if (isVoid)
+        {
+            ManageVoidMethod(
+                useAuthentication,
+                methodsBuilder,
+                method,
+                parameters,
+                parametersWithoutToken,
+                paramsSeparator,
+                arguments,
+                argumentsWithoutToken,
+                argsSeparator,
+                methodAttributes,
+                hasCancellationToken,
+                hasInitializeMethod);
+        }
+        else
+        {
+            ManageReturningMethod(
+                useAuthentication,
+                methodsBuilder,
+                method,
+                parameters,
+                parametersWithoutToken,
+                paramsSeparator,
+                arguments,
+                argumentsWithoutToken,
+                argsSeparator,
+                returnType,
+                methodAttributes,
+                hasCancellationToken,
+                hasInitializeMethod);
+        }
+    }
+
+    private static void ManageReturningMethod(bool useAuthentication, StringBuilder methodsBuilder, IMethodSymbol method, string parameters, string parametersWithoutToken, string? paramsSeparator, string arguments, string argumentsWithoutToken, string? argsSeparator, string returnType, string methodAttributes, bool hasCancellationToken, bool hasInitializeMethod)
+    {
+        var genericType = returnType.Substring(returnType.IndexOf('<') + 1, returnType.Length - returnType.IndexOf('<') - 2);
+
+        if (hasCancellationToken)
+        {
+            methodsBuilder.AppendLine(
+            $$"""
+                {{methodAttributes}}
+                public async IAsyncEnumerable<{{genericType}}> {{method.Name}}({{parametersWithoutToken}}{{paramsSeparator}}[EnumeratorCancellation] CancellationToken cancellationToken = default)
+                {
+                    {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
+                    {{(hasInitializeMethod ? "OnInitialized(Context);" : null)}}
+                    yield return await _implementation.{{method.Name}}({{argumentsWithoutToken}}{{argsSeparator}}cancellationToken: cancellationToken);
+                }
+            """);
+        }
+        else
+        {
+            methodsBuilder.AppendLine(
+            $$"""
+                {{methodAttributes}}
+                public async Task<{{genericType}}> {{method.Name}}({{parameters}})
+                {
+                    {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
+                    {{(hasInitializeMethod ? "OnInitialized(Context);" : null)}}
+                    return await _implementation.{{method.Name}}({{arguments}});
+                }
+            """);
+        }
+    }
+
+    private static void ManageVoidMethod(bool useAuthentication, StringBuilder methodsBuilder, IMethodSymbol method, string parameters, string parametersWithoutToken, string? paramsSeparator, string arguments, string argumentsWithoutToken, string? argsSeparator, string methodAttributes, bool hasCancellationToken, bool hasInitializeMethod)
+    {
+        if (hasCancellationToken)
+        {
+            methodsBuilder.AppendLine(
+            $$"""
+                {{methodAttributes}}
+                public async IAsyncEnumerable<bool> {{method.Name}}({{parametersWithoutToken}}{{paramsSeparator}}[EnumeratorCancellation] CancellationToken cancellationToken = default)
+                {
+                    {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
+                    {{(hasInitializeMethod ? "OnInitialized(Context);" : null)}}
+                    await _implementation.{{method.Name}}({{argumentsWithoutToken}}{{argsSeparator}}cancellationToken: cancellationToken);
+                    yield return true;
+                }
+            """);
+        }
+        else
+        {
+            methodsBuilder.AppendLine(
+            $$"""
+                {{methodAttributes}}
+                public async Task {{method.Name}}({{parameters}})
+                {
+                    {{(useAuthentication ? "EnsureAuthenticated(Context);" : null)}}
+                    {{(hasInitializeMethod ? "OnInitialized(Context);" : null)}}
+                    await _implementation.{{method.Name}}({{arguments}});
+                }
+            """);
+        }
     }
 
     private static void ReportError(SourceProductionContext context, string id, string message, INamedTypeSymbol? classSymbol = null)

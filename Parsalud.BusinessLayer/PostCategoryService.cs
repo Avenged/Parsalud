@@ -3,16 +3,22 @@ using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess.Models;
 using Parsalud.DataAccess;
 using VENative.Blazor.ServiceGenerator.Attributes;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Parsalud.BusinessLayer;
 
-[GenerateHub]
+[GenerateHub(useAuthentication: true)]
 public class PostCategoryService(
     IDbContextFactory<ParsaludDbContext> dbContextFactory,
     IUserService userService) : IPostCategoryService
 {
     private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
     private readonly IUserService _userService = userService;
+
+    public void OnInitialized(HubCallerContext context)
+    {
+        _userService.SetUser(context.User);
+    }
 
     public async Task<BusinessResponse<ParsaludPostCategory>> CreateAsync(ManagePostCategoryRequest request, CancellationToken cancellationToken = default)
     {

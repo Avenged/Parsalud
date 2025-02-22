@@ -1,17 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using VENative.Blazor.ServiceGenerator.Attributes;
 
 namespace Parsalud.BusinessLayer;
 
-[GenerateHub]
+[GenerateHub(useAuthentication: true)]
 public class UserManagerService(
     IDbContextFactory<ParsaludDbContext> dbContextFactory,
     IUserService userService) : IUserManagerService
 {
     private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
     private readonly IUserService _userService = userService;
+
+    public void OnInitialized(HubCallerContext context)
+    {
+        _userService.SetUser(context.User);
+    }
 
     public Task<BusinessResponse<ParsaludUserDto>> CreateAsync(ManageUserRequest request, CancellationToken cancellationToken = default)
     {

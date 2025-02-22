@@ -24,8 +24,8 @@ public static class Installer
         services.AddTransient<IStyleSheetService, StyleSheetService>();
         services.AddTransient<ISectionService, SectionService>();
         services.AddTransient<IFaqService, FaqService>();
-        services.AddTransient<IUserService, UserService>();
         services.AddTransient<IPostService, PostService>();
         services.AddTransient<IPostCategoryService, PostCategoryService>();
+        services.AddScoped<IUserService, UserService>();
     }
 }

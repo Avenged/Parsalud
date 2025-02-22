@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using NUglify;
 using Parsalud.BusinessLayer.Abstractions;
@@ -10,7 +11,7 @@ using ZiggyCreatures.Caching.Fusion;
 
 namespace Parsalud.BusinessLayer;
 
-[GenerateHub]
+[GenerateHub(useAuthentication: true)]
 public class StyleSheetService(
     IDbContextFactory<ParsaludDbContext> dbContextFactory,
     IUserService userService,
@@ -20,6 +21,11 @@ public class StyleSheetService(
     private readonly IUserService _userService = userService;
     private readonly IFusionCache _cache = fusionCache;
     private static readonly StringComparison comp = StringComparison.CurrentCultureIgnoreCase;
+
+    public void OnInitialized(HubCallerContext context)
+    {
+        _userService.SetUser(context.User);
+    }
 
     public async Task<BusinessResponse<ParsaludStyleSheet>> CreateAsync(ManageStyleSheetRequest request, CancellationToken cancellationToken = default)
     {

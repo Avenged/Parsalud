@@ -17,6 +17,7 @@ using MimeKit;
 using NuGet.Configuration;
 using Microsoft.Extensions.Options;
 using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;

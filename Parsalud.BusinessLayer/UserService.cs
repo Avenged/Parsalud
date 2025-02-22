@@ -1,18 +1,22 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using Parsalud.BusinessLayer.Abstractions;
 
 namespace Parsalud.BusinessLayer;
 
-public class UserService(IHttpContextAccessor httpContextAccessor) : IUserService
+public class UserService : IUserService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private ClaimsPrincipal? _user;
+
+    public void SetUser(ClaimsPrincipal? user)
+    {
+        _user = user;
+    }
 
     public Guid Id 
     {
         get
         {
-            var nameIdentifier = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var nameIdentifier = _user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (Guid.TryParse(nameIdentifier, out var id))
             {
@@ -27,7 +31,7 @@ public class UserService(IHttpContextAccessor httpContextAccessor) : IUserServic
     {
         get
         {
-           return  _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+           return  _user?.Identity?.Name;
         } 
     }
 
@@ -35,7 +39,7 @@ public class UserService(IHttpContextAccessor httpContextAccessor) : IUserServic
     {
         get
         {
-            return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
+            return _user?.FindFirst(ClaimTypes.Email)?.Value;
         }
     }
 }
