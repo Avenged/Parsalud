@@ -2,6 +2,7 @@
 @page "/Dashboard/File/{Id:guid}/Update"
 @page "/Dashboard/File/{Id:guid}/View"
 
+@inject IServiceProvider Services
 @inherits BaseAbm<FileModel, IFileService, ParsaludFile, ManageFileRequest, FileSearchCriteria>
 
 <PageTitle>@Action("Subir", "Editar", "Ver") archivo - Dashboard Parsalud</PageTitle>
@@ -13,14 +14,21 @@
             <RadzenRow class="mb-2">
                 <RadzenColumn SizeMD="12">
                     <RadzenStack Gap="5">
+                        <AntiforgeryToken />
                         <RadzenUpload style="width: fit-content;"
-                                      Accept="image/*"
+                                      Accept=".jpg,.jpeg,.png,.webp"
                                       Multiple="false"
                                       Url="upload/single"
                                       ChooseText="Seleccionar de mi dispositivo"
                                       Progress="@((args) => progress = args.Progress)"
                                       Complete="Complete"
-                                      Error="Error" />
+                                      Error="Error">
+                            <AntiforgeryToken />
+                            @if (_requestToken is not null)
+                            {
+                                <RadzenUploadHeader Name="RequestVerificationToken" Value="@_requestToken.Value" />
+                            }
+                        </RadzenUpload>
 
                         <p>Progreso de subida: @progress%</p>
                     </RadzenStack>
@@ -31,7 +39,7 @@
                 </RadzenColumn>
             </RadzenRow>
             <RadzenStack Orientation="Orientation.Horizontal">
-@*                 @if (!ReadOnly)
+                @*                 @if (!ReadOnly)
                 {
                     <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
                 } *@

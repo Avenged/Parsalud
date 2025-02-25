@@ -1,4 +1,6 @@
-﻿namespace Parsalud;
+﻿using MailKit.Security;
+
+namespace Parsalud;
 
 public class EmailSettings
 {
@@ -10,4 +12,16 @@ public class EmailSettings
     public string Subject { get; set; } = string.Empty;
     public int Port { get; set; }
     public string Template { get; set; } = string.Empty;
+    public string SecureSocketOption { get; set; } = nameof(SecureSocketOptions.None);
+    public SecureSocketOptions SecureSocketOptionValue 
+    {
+        get
+        {
+            if (Enum.TryParse<SecureSocketOptions>(SecureSocketOption, out var enumValue))
+            {
+                return enumValue;
+            }
+            throw new InvalidOperationException($"'{SecureSocketOption}' no es una opción válida para SecureSocketOptions.");
+        }
+    } 
 }

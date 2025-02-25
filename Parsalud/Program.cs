@@ -6,18 +6,8 @@ using VENative.Blazor.ServiceGenerator.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Parsalud.DataAccess.Models;
 using Parsalud.Components.Account;
-using Microsoft.AspNetCore.Mvc;
-using Parsalud.BusinessLayer.Abstractions;
-using Microsoft.AspNetCore.Antiforgery;
-using Humanizer;
 using ZiggyCreatures.Caching.Fusion;
 using Parsalud;
-using NUglify.Helpers;
-using MimeKit;
-using NuGet.Configuration;
-using Microsoft.Extensions.Options;
-using MailKit.Net.Smtp;
-using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -33,7 +23,11 @@ if (OperatingSystem.IsWindows())
     });
 }
 
-builder.Services.AddControllers();
+if (configuration.GetValue<bool>("UseAntiforgery"))
+{
+    builder.Services.AddAntiforgery();
+}
+
 builder.Services.AddRadzenComponents();
 builder.Services.AddFusionCache().WithDefaultEntryOptions(options =>
 {
@@ -84,93 +78,10 @@ if (configuration.GetValue<bool>("UseAntiforgery"))
 }
 
 app.MapStaticAssets();
-app.MapControllers();
-app.MapPost("/contactme", async (
-    HttpContext context,
-    [FromForm] IFormCollection form, 
-    IOptions<EmailSettings> settings,
-    ILogger<Program> Logger,
-    IAntiforgery antiforgery) =>
-{
-    var emailFrom = settings.Value.EmailFrom;
-    var emailTo = settings.Value.EmailTo;
-    var subject = settings.Value.Subject;
-    var username = settings.Value.Username;
-    var password = settings.Value.Password;
-    var host = settings.Value.Host;
-    var port = settings.Value.Port;
-    var template = settings.Value.Template;
-
-    if (!string.IsNullOrWhiteSpace(form["__RequestVerificationToken"]))
-    {
-        context.Request.Headers.TryAdd("X-CSRF-TOKEN", form["__RequestVerificationToken"]);
-        if (!antiforgery.IsRequestValidAsync(context).Result)
-        {
-            return Results.BadRequest("Token CSRF inválido");
-        }
-    }
-    else
-    {
-        return Results.BadRequest("Token CSRF inválido");
-    }
-
-    string? givenName = form["given-name"].FirstOrDefault()?.Truncate(100);
-    string? familyName = form["family-name"].FirstOrDefault()?.Truncate(100);
-    string? tel = form["tel"].FirstOrDefault()?.Truncate(20);
-    string? mail = form["email"].FirstOrDefault()?.Truncate(50);
-    string? comments = form["comments"].FirstOrDefault()?.Truncate(500);
-
-    string?[] strs = [givenName, familyName, tel, mail];
-
-    if (strs.Any(x => string.IsNullOrWhiteSpace(x)))
-    {
-        return Results.BadRequest("Formulario incorrecto");
-    }
-
-    template = template.Replace("{GivenName}", givenName);
-    template = template.Replace("{FamilyName}", familyName);
-    template = template.Replace("{Tel}", tel);
-    template = template.Replace("{Mail}", mail);
-    template = template.Replace("{Comments}", comments);
-
-    try
-    {
-        MimeMessage email = new();
-        email.From.Add(new MailboxAddress("Parsalud Web App", emailFrom));
-        email.To.Add(new MailboxAddress("Asesor", emailTo));
-        email.Subject = subject;
-
-        email.Body = new TextPart("plain")
-        {
-            Text = template
-        };
-
-        using SmtpClient smtp = new();
-        await smtp.ConnectAsync(host, port, MailKit.Security.SecureSocketOptions.StartTls);
-        await smtp.AuthenticateAsync(username, password);
-        await smtp.SendAsync(email);
-        await smtp.DisconnectAsync(true);
-
-        return Results.LocalRedirect("~/dr/Contacto/Success");
-    }
-    catch (Exception ex)
-    {
-        Logger.LogCritical(ex, "No se pudo enviar el mail de contacto");
-        return Results.Problem("Error al enviar el correo: " + ex.Message);
-    }
-});
-
-app.MapGet($"/css/{AppConstants.MAIN_CSS_FILENAME}", async ([FromServices] IStyleSheetService ssService, CancellationToken cancellationToken = default) =>
-{
-    
-    var css = await ssService.GetBundleCssAsync(cancellationToken);
-    if (css.IsSuccessWithData)
-    {
-        return Results.Text(css.Data, "text/css");
-    }
-
-    return Results.Text("", "text/css");
-});
+app.MapContactMe();
+app.MapCssBundle();
+app.MapUpload();
+app.MapUploads();
 
 app.MapGeneratedHubs(useAuthorization: true, typeof(Parsalud.BusinessLayer.IAssemblyMarker).Assembly);
 

@@ -42,22 +42,32 @@ public class FileService : IFileService
         try
         {
             await Task.CompletedTask;
+
+            // Obtener solo el nombre del archivo sin rutas maliciosas
+            fileName = Path.GetFileName(fileName);
             var filePath = Path.Combine(_appStoragePath, fileName);
 
-            if (File.Exists(filePath))
+            // Normalizar la ruta y verificar que esté dentro del directorio permitido
+            var fullPath = Path.GetFullPath(filePath);
+            if (!fullPath.StartsWith(_appStoragePath, StringComparison.OrdinalIgnoreCase))
             {
-                File.Delete(filePath);
+                return BusinessResponse.Error("Acceso no permitido.");
+            }
+
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
                 return BusinessResponse.Success();
             }
             else
             {
-                return BusinessResponse.Error("No se encontró el archivo");
+                return BusinessResponse.Error("No se encontró el archivo.");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "No se pudo eliminar el archivo");
-            return BusinessResponse.Error("Ocurrió un error inesperado");
+            _logger.LogError(ex, "No se pudo eliminar el archivo.");
+            return BusinessResponse.Error("Ocurrió un error inesperado.");
         }
     }
 

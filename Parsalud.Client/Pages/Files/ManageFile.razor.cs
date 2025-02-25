@@ -1,4 +1,5 @@
-﻿using Parsalud.BusinessLayer.Abstractions;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.Client.Components;
 using Radzen;
 
@@ -10,7 +11,13 @@ public partial class ManageFile : BaseAbm<FileModel, IFileService, ParsaludFile,
     {  
     }
 
+    private AntiforgeryRequestToken? _requestToken;
     private int progress = 0;
+
+    protected override void OnInitialized()
+    {
+        _requestToken = Services.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
+    }
 
     private void Error(UploadErrorEventArgs args)
     {
