@@ -11,6 +11,7 @@ using Parsalud;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
+var useDashboard = configuration.GetValue<bool>("UseDashboard");
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
@@ -82,6 +83,34 @@ app.MapContactMe();
 app.MapCssBundle();
 app.MapUpload();
 app.MapUploads();
+
+if (!useDashboard)
+{
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path.StartsWithSegments("/Dashboard") ||
+            context.Request.Path.StartsWithSegments("/Account"))
+        {
+            context.Response.StatusCode = 404;
+            return;
+        }
+
+        await next();
+    });
+}
+else
+{
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path.StartsWithSegments("/"))
+        {
+            context.Response.Redirect("/Dashboard");
+            return;
+        }
+
+        await next();
+    });
+}
 
 app.MapGeneratedHubs(useAuthorization: true, typeof(Parsalud.BusinessLayer.IAssemblyMarker).Assembly);
 
