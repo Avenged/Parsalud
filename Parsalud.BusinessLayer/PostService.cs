@@ -50,7 +50,7 @@ public class PostService(
                 Title = entity.Title,
                 Description = entity.Description ?? "",
                 ImgSrc = entity.ImgSrc ?? "",
-                PostCategory = entity.PostCategory.Name,
+                PostCategory = entity.PostCategory?.Name ?? "",
                 Hidden = entity.Hidden,
                 PostCategoryId = entity.PostCategoryId,
                 CreatedAt = entity.CreatedAt,

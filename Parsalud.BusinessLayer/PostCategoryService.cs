@@ -88,7 +88,7 @@ public class PostCategoryService(
             var entity = await dbContext.PostCategories.Include(x => x.Posts)
                 .FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
 
-            if (entity.Posts.Count > 0)
+            if (entity.Posts.Any(x => !x.Deleted))
             {
                 return BusinessResponse.Error("La categoría no puede eliminarse porque está siendo usada en uno o más posts.");
             }
