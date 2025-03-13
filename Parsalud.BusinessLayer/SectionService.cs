@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Caching.Memory;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
 using VENative.Blazor.ServiceGenerator.Attributes;
-using ZiggyCreatures.Caching.Fusion;
 
 namespace Parsalud.BusinessLayer;
 
@@ -13,14 +13,11 @@ namespace Parsalud.BusinessLayer;
 public class SectionService(
     IDbContextFactory<ParsaludDbContext> dbContextFactory,
     IUserService userService,
-    IFusionCache cache,
     IMemoryCache memoryCache) : ISectionService
 {
     private readonly IDbContextFactory<ParsaludDbContext> _dbContextFactory = dbContextFactory;
     private readonly IUserService _userService = userService;
-    private readonly IFusionCache _cache = cache;
     private readonly IMemoryCache _memoryCache = memoryCache;
-    private static readonly StringComparison comp = StringComparison.CurrentCultureIgnoreCase;
 
     public void OnInitialized(HubCallerContext context)
     {
@@ -40,8 +37,7 @@ public class SectionService(
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var sections = await GetSectionsAsync(cancellationToken);
-            var exists = sections.Any(x => x.Code.Equals(request.Code, comp));
+            var exists = await dbContext.Sections.AnyAsync(x => EF.Functions.Like(x.Code, request.Code), cancellationToken);
 
             if (exists)
             {
@@ -70,7 +66,6 @@ public class SectionService(
             dbContext.Add(entity);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            await _cache.RemoveByTagAsync(CacheTags.Section, token: cancellationToken);
             return BusinessResponse.Success(EntityToDTO(entity));
         }
         catch (Exception)
@@ -85,15 +80,14 @@ public class SectionService(
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var sections = await GetSectionsAsync(cancellationToken);
-            var exists = sections.Any(x => x.Code.Equals(request.Code, comp) && x.Id != id);
+            var exists = await dbContext.Sections.AnyAsync(x => EF.Functions.Like(x.Code, request.Code) && x.Id != id, cancellationToken);
 
             if (exists)
             {
                 return BusinessResponse.Error<ParsaludSection>("Ya existe una sección con el mismo código");
             }
 
-            var entity = sections.First(x => x.Id == id && !x.Deleted);
+            var entity = await dbContext.Sections.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
 
             entity.Code = request.Code;
             entity.Name = request.Name;
@@ -113,7 +107,6 @@ public class SectionService(
             dbContext.Update(entity);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            await _cache.RemoveByTagAsync(CacheTags.Section, token: cancellationToken);
             return BusinessResponse.Success(EntityToDTO(entity));
         }
         catch (Exception)
@@ -128,8 +121,7 @@ public class SectionService(
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var sections = await GetSectionsAsync(cancellationToken);
-            var entity = sections.First(x => x.Id == id && !x.Deleted);
+            var entity = await dbContext.Sections.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);
 
             entity.Deleted = true;
             entity.UpdatedAt = DateTime.Now;
@@ -138,7 +130,6 @@ public class SectionService(
             dbContext.Update(entity);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            await _cache.RemoveByTagAsync(CacheTags.Section, token: cancellationToken);
             return BusinessResponse.Success(EntityToDTO(entity));
         }
         catch (Exception)
@@ -153,8 +144,7 @@ public class SectionService(
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            var sections = await GetSectionsAsync(cancellationToken);
-            var entity = sections.Where(x => x.Id == id && !x.Deleted)
+            var entity = await dbContext.Sections.Where(x => x.Id == id && !x.Deleted)
                 .Select(x => new ParsaludSection
                 {
                     Id = x.Id,
@@ -170,7 +160,7 @@ public class SectionService(
                     Param4 = x.Param4,
                     Param5 = x.Param5,
                     Param6 = x.Param6,
-                }).FirstOrDefault();
+                }).FirstOrDefaultAsync(cancellationToken);
 
             if (entity is null)
             {
@@ -189,17 +179,18 @@ public class SectionService(
     {
         try
         {
-            var sections = await GetSectionsAsync(cancellationToken);
-            var query = sections.AsEnumerable();
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            var query = dbContext.Sections.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(criteria.Name))
-                query = query.Where(x => x.Name.Contains(criteria.Name, comp));
+                query = query.Where(x => EF.Functions.Like(x.Name, $"%{criteria.Name}%"));
 
             if (!string.IsNullOrWhiteSpace(criteria.Code))
-                query = query.Where(x => x.Code.Contains(criteria.Code, comp));
+                query = query.Where(x => EF.Functions.Like(x.Code, $"%{criteria.Code}%"));
 
             if (!string.IsNullOrWhiteSpace(criteria.Content))
-                query = query.Where(x => x.Content.Contains(criteria.Content, comp));
+                query = query.Where(x => EF.Functions.Like(x.Content, $"%{criteria.Content}%"));
 
             if (criteria.SectionKind.HasValue && criteria.SectionKind == SectionKind.Page)
                 query = query.Where(x => !string.IsNullOrWhiteSpace(x.Page));
@@ -208,7 +199,7 @@ public class SectionService(
 
             query = query.Where(x => !x.Deleted);
 
-            var entities = query.Select(x => new ParsaludSection
+            var entities = await query.Select(x => new ParsaludSection
             {
                 Id = x.Id,
                 Content = x.Content,
@@ -223,7 +214,7 @@ public class SectionService(
                 Param4 = x.Param4,
                 Param5 = x.Param5,
                 Param6 = x.Param6,
-            }).ToArray();
+            }).ToArrayAsync(cancellationToken);
 
             return BusinessResponse.Success(new Paginated<ParsaludSection[]>
             {
@@ -253,43 +244,44 @@ public class SectionService(
         {
             var codeUpper = code.ToUpper();
 
-            var sections = await GetSectionsAsync(cancellationToken);
-            var query = sections.Where(x => !x.Deleted &&
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            var query = dbContext.Sections.Where(x => !x.Deleted &&
                 (!string.IsNullOrWhiteSpace(x.Page) &&
-                x.Page.Equals(codeUpper, comp)) ||
-                x.Code.Equals(codeUpper, comp));
+                EF.Functions.Like(x.Page, codeUpper)) ||
+                EF.Functions.Like(x.Code, codeUpper));
 
             if (!string.IsNullOrWhiteSpace(param1))
-                query = query.Where(x => (x.Param1 ?? "").Equals(param1, comp) || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => EF.Functions.Like(x.Param1, param1) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param1 == null);
 
             if (!string.IsNullOrWhiteSpace(param2))
-                query = query.Where(x => (x.Param2 ?? "").Equals(param2, comp) || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => EF.Functions.Like(x.Param2, param2) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param2 == null);
 
             if (!string.IsNullOrWhiteSpace(param3))
-                query = query.Where(x => (x.Param3 ?? "").Equals(param3, comp) || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => EF.Functions.Like(x.Param3, param3) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param3 == null);
 
             if (!string.IsNullOrWhiteSpace(param4))
-                query = query.Where(x => (x.Param4 ?? "").Equals(param4, comp) || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => EF.Functions.Like(x.Param4, param4) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param4 == null);
 
             if (!string.IsNullOrWhiteSpace(param5))
-                query = query.Where(x => (x.Param5 ?? "").Equals(param5, comp) || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => EF.Functions.Like(x.Param5, param5) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param5 == null);
 
             if (!string.IsNullOrWhiteSpace(param6))
-                query = query.Where(x => (x.Param6 ?? "").Equals(param6, comp) || string.IsNullOrWhiteSpace(x.Page));
+                query = query.Where(x => EF.Functions.Like(x.Param6, param6) || string.IsNullOrWhiteSpace(x.Page));
             else
                 query = query.Where(x => x.Param6 == null);
 
-            var entity = query.Select(x => new ParsaludSection()
+            var entity = await query.Select(x => new ParsaludSection()
             {
                 Id = x.Id,
                 Content = x.Content,
@@ -304,7 +296,7 @@ public class SectionService(
                 Param4 = x.Param4,
                 Param5 = x.Param5,
                 Param6 = x.Param6,
-            }).FirstOrDefault();
+            }).FirstOrDefaultAsync(cancellationToken);
 
             if (entity is null)
             {
@@ -358,18 +350,5 @@ public class SectionService(
         instance!.I++;
 
         await Task.CompletedTask;
-    }
-
-    private async Task<List<Section>> GetSectionsAsync(CancellationToken cancellationToken = default)
-    {
-        var entities = await _cache.GetOrSetAsync("sections", async token =>
-        {
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync(token);
-            var section = await dbContext.Sections.Where(x => !x.Deleted)
-                .ToListAsync(token);
-            return section;
-        }, tags: [CacheTags.Section], token: cancellationToken);
-
-        return entities;
     }
 }

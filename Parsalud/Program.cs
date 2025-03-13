@@ -6,14 +6,13 @@ using VENative.Blazor.ServiceGenerator.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Parsalud.DataAccess.Models;
 using Parsalud.Components.Account;
-using ZiggyCreatures.Caching.Fusion;
 using Parsalud;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 var useDashboard = configuration.GetValue<bool>("UseDashboard");
 
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<EmailSettings>(configuration.GetRequiredSection("EmailSettings"));
 
 if (OperatingSystem.IsWindows())
 {
@@ -30,10 +29,6 @@ if (configuration.GetValue<bool>("UseAntiforgery"))
 }
 
 builder.Services.AddRadzenComponents();
-builder.Services.AddFusionCache().WithDefaultEntryOptions(options =>
-{
-    options.Duration = TimeSpan.MaxValue;
-});
 builder.Services.AddMemoryCache();
 builder.Services.AddBusinessLayer(builder.Configuration);
 builder.Services.AddSecurity();
