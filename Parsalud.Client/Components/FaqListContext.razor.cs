@@ -12,20 +12,28 @@ public partial class FaqListContext : ParsaludComponent
     public string? LoadingView { get; set; }
 
     [Parameter]
-    public string? Category { get; set; }
-
-    [Parameter]
     public string? MaxCount { get; set; }
 
+    [Parameter]
+    public string? ServiceCode { get; set; }
+
     private ParsaludFaq[]? items;
+    private bool OnlyGeneric;
 
     protected override async Task OnInitializedAsync()
     {
         _ = int.TryParse(MaxCount, out int maxCountInt);
 
+        if (ServiceCode?.Equals("{ServiceCode}") ?? false)
+        {
+            ServiceCode = null;
+            OnlyGeneric = true;
+        }
+
         var response = await FaqService.GetByCriteriaAsync(new FaqSearchCriteria
         {
-            Category = Category,
+            ServiceCode = ServiceCode,
+            OnlyGeneric = OnlyGeneric,
             MaxCount = maxCountInt == 0 ? null : maxCountInt,
         });
 

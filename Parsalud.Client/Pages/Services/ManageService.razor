@@ -1,0 +1,37 @@
+﻿@page "/Dashboard/Service/Create"
+@page "/Dashboard/Service/{Id:guid}/Update"
+@page "/Dashboard/Service/{Id:guid}/View"
+
+@inherits BaseAbm<ServiceModel, IServiceService, ParsaludService, ManageServiceRequest, ServiceSearchCriteria>
+
+<PageTitle>@Action("Nuevo", "Editar", "Ver") servicio - Dashboard Parsalud</PageTitle>
+
+<RadzenCard>
+    <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">@Action("Nuevo", "Editar", "Ver") servicio</RadzenText>
+    <RadzenTemplateForm TItem="ServiceModel" Data="Model" Submit="Submit">
+        <RadzenStack>
+            <RadzenRow>
+                <RadzenColumn SizeMD="12">
+                    <RadzenFormField class="rz-w-100" Text="Código">
+                        <RadzenTextBox class="rz-text-uppercase" Trim="true" Name=@nameof(Model.Code) ReadOnly="@ReadOnly" @bind-Value=@Model.Code />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component=@nameof(Model.Code) Text="Código es requerido" />
+                    <RadzenRegexValidator Component=@nameof(Model.Code) Pattern="^[a-zA-Z0-9_-]+$" Text="El código solo puede contener letras, números, guiones (-) y guiones bajos (_). No se permiten espacios, tabulaciones ni otros caracteres especiales." />
+                </RadzenColumn>
+                <RadzenColumn SizeMD="12">
+                    <RadzenFormField class="rz-w-100" Text="Nombre">
+                        <RadzenTextBox Trim="true" Name=@nameof(Model.Name) ReadOnly="@ReadOnly" @bind-Value=@Model.Name />
+                    </RadzenFormField>
+                    <RadzenRequiredValidator Component=@nameof(Model.Name) Text="Nombre es requerido" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                @if (!ReadOnly)
+                {
+                    <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text=@Action("Crear", "Guardar cambios") Icon="save" IsBusy=@IsBusy BusyText=@Action("Creando...", "Actualizando...") />
+                }
+                <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Secondary" Text=@(ReadOnly ? "Volver" : "Descartar") Icon="keyboard_return" Click="Discard" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenCard>

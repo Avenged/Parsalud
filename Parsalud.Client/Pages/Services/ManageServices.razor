@@ -1,0 +1,59 @@
+﻿@page "/Dashboard/Services"
+@inherits ManagerBase<IServiceService, ParsaludService, ManageServiceRequest, ServiceSearchCriteria>
+
+<PageTitle>Servicios - Dashboard Parsalud</PageTitle>
+
+<RadzenStack>
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.H2" TagName="TagName.H2">Administrar servicios</RadzenText>
+        <RadzenText TextStyle="TextStyle.H5" TagName="TagName.H5">Buscar servicios</RadzenText>
+        <RadzenTemplateForm TItem="ManageServices" Data="this" Submit="Submit">
+            <RadzenStack>
+                <RadzenRow>
+                    <RadzenColumn SizeMD="12">
+                        <RadzenFormField class="rz-w-100" Text="Nombre">
+                            <RadzenTextBox @bind-Value=@Criteria.Name />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn SizeMD="12">
+                        <RadzenFormField class="rz-w-100" Text="Código">
+                            <RadzenTextBox @bind-Value=@Criteria.Code />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                    <div>
+                        <RadzenButton class="rz-w-fit-content" ButtonType="ButtonType.Submit" Text="Buscar" Icon="search" IsBusy=@IsSearching BusyText="Buscando..." />
+                        <RadzenButton class="rz-w-fit-content" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Text="Limpiar" Icon="refresh" Click="Reset" />
+                    </div>
+                    <RadzenButton class="rz-w-fit-content" ButtonStyle="ButtonStyle.Success" Text=@NEW_ITEM_TEXT Icon="add" Click="CreateNew" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenTemplateForm>
+    </RadzenCard>
+
+    @if (Items is not null)
+    {
+        <RadzenCard>
+            @if (Items.Length > 0)
+            {
+                <RadzenDataList TItem="ParsaludService" Data="Items" AllowVirtualization="true">
+                    <Template>
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                            <RadzenText><b>@context.Name</b></RadzenText>
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="visibility" TooltipText="Visualizar" Link=@($"Dashboard/Service/{context.Id}/View") />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="edit_square" TooltipText="Editar" Link=@($"Dashboard/Service/{context.Id}/Update") />
+                                <ButtonWithTooltip Variant="Variant.Text" Icon="delete" TooltipText="Eliminar" Click="@(x => Delete(context.Id))" />
+                            </RadzenStack>
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataList>
+            }
+            else
+            {
+                <RadzenText>No se encontraron resultados</RadzenText>
+            }
+        </RadzenCard>
+    }
+</RadzenStack>

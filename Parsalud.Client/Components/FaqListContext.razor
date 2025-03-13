@@ -2,46 +2,12 @@
 @inject IFaqService FaqService
 @attribute [StreamRendering]
 
-@* @if (items is null)
-{
-    <div class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-}
-else
-{
-    <div @attributes=@Attributes class="@GetCssClass()" id="faq-accordion">
-        @foreach (var item in items)
-        {
-            <div @key=@item.Id class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target=@($"#collapse-{item.Id}") aria-expanded="false" aria-controls=@($"collapse-{item.Id}")>
-                        @item.Question
-                    </button>
-                </h2>
-                <div id=@($"collapse-{item.Id}") class="accordion-collapse collapse" data-bs-parent="#faq-accordion">
-                    <div class="accordion-body">
-                        @item.Answer
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-} *@
-
 @if (items is null)
 {
     @if (!string.IsNullOrWhiteSpace(LoadingView))
     {
         <DynamicSection Code="@LoadingView" />
     }
-    @* <div class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div> *@
 }
 else
 {

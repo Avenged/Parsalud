@@ -13,7 +13,7 @@
             <RadzenRow>
                 <RadzenColumn SizeMD="6">
                     <RadzenFormField class="rz-w-100" Text="Nombre">
-                        <RadzenTextBox Name=@nameof(Model.Name) ReadOnly="@ReadOnly" @bind-Value=@Model.Name />
+                        <RadzenTextBox Trim="true" Name=@nameof(Model.Name) ReadOnly="@ReadOnly" @bind-Value=@Model.Name />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.Name) Text="Nombre es requerido" />
                 </RadzenColumn>

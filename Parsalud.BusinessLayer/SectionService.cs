@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Parsalud.BusinessLayer.Abstractions;
 using Parsalud.DataAccess;
 using Parsalud.DataAccess.Models;
+using System.Text.RegularExpressions;
 using VENative.Blazor.ServiceGenerator.Attributes;
 
 namespace Parsalud.BusinessLayer;
@@ -42,6 +43,11 @@ public class SectionService(
             if (exists)
             {
                 return BusinessResponse.Error<ParsaludSection>("Ya existe una sección con el mismo código");
+            }
+
+            if (!Regex.IsMatch(request.Code, @"^[a-zA-Z0-9_-]+$"))
+            {
+                return BusinessResponse.Error<ParsaludSection>("El código solo puede contener letras, números, guiones (-) y guiones bajos (_). No se permiten espacios ni caracteres especiales.");
             }
 
             Section entity = new()
@@ -85,6 +91,11 @@ public class SectionService(
             if (exists)
             {
                 return BusinessResponse.Error<ParsaludSection>("Ya existe una sección con el mismo código");
+            }
+
+            if (!Regex.IsMatch(request.Code, @"^[a-zA-Z0-9_-]+$"))
+            {
+                return BusinessResponse.Error<ParsaludSection>("El código solo puede contener letras, números, guiones (-) y guiones bajos (_). No se permiten espacios ni caracteres especiales.");
             }
 
             var entity = await dbContext.Sections.FirstAsync(x => x.Id == id && !x.Deleted, cancellationToken);

@@ -7,6 +7,7 @@ public class FaqModel : IModelBase<FaqModel, ManageFaqRequest, ParsaludFaq>
     public Guid? Id { get; set; }
     public string? Question { get; set; }
     public string? Answer { get; set; }
+    public Guid? ServiceId { get; set; }
     public bool Hidden { get; set; }
 
     public FaqModel FromDto(ParsaludFaq dto)
@@ -17,6 +18,7 @@ public class FaqModel : IModelBase<FaqModel, ManageFaqRequest, ParsaludFaq>
             Hidden = dto.Hidden,
             Id = dto.Id,
             Question = dto.Question,
+            ServiceId = dto.ServiceId,
         };
     }
 
@@ -27,6 +29,7 @@ public class FaqModel : IModelBase<FaqModel, ManageFaqRequest, ParsaludFaq>
             Question = Question ?? "",
             Answer = Answer ?? "",
             Hidden = Hidden,
+            ServiceId = ServiceId,
         };
     }
 }

@@ -16,7 +16,7 @@
             <RadzenRow>
                 <RadzenColumn SizeMD="6">
                     <RadzenFormField class="rz-w-100" Text="Título">
-                        <RadzenTextBox Name=@nameof(Model.Title) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.Title />
+                        <RadzenTextBox Trim="true" Name=@nameof(Model.Title) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.Title />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.Title) Text="Título es requerido" />
                 </RadzenColumn>
@@ -42,7 +42,7 @@
             <RadzenRow>
                 <RadzenColumn SizeMD="12">
                     <RadzenFormField class="rz-w-100" Text="Descripción">
-                        <RadzenTextBox Name=@nameof(Model.Description) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.Description />
+                        <RadzenTextBox Trim="true" Name=@nameof(Model.Description) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.Description />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.Description) Text="Description es requerido" />
                 </RadzenColumn>
@@ -50,7 +50,7 @@
             <RadzenRow>
                 <RadzenColumn SizeMD="12">
                     <RadzenFormField class="rz-w-100" Text="Link de imágen">
-                        <RadzenTextBox Name=@nameof(Model.ImgSrc) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.ImgSrc />
+                        <RadzenTextBox Trim="true" Name=@nameof(Model.ImgSrc) Change="Increment" ReadOnly="@ReadOnly" @bind-Value=@Model.ImgSrc />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.ImgSrc) Text="Link de la imágen es requerido" />
                 </RadzenColumn>

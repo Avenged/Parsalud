@@ -1,8 +1,26 @@
 ﻿class ButtonArrow extends HTMLElement {
     constructor() {
         super();
-        const shadow = this.attachShadow({ mode: "open" });
-        shadow.innerHTML = `
+        this.attachShadow({ mode: "open" });
+        this.render();
+    }
+
+    static get observedAttributes() {
+        return ["color"];
+    }
+
+    attributeChangedCallback() {
+        this.render();
+    }
+
+    render() {
+        let color = this.getAttribute("color");
+
+        if (color === '{Color}') {
+            color = null;
+        }
+
+        this.shadowRoot.innerHTML = `
             <style>
                 :host {
                     display: inline-block;
@@ -13,6 +31,7 @@
                 svg {
                     width: 100%;
                     height: 100%;
+                    ${color ? `color: ${color};` : ''}
                 }
             </style>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

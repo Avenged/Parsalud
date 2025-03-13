@@ -12,6 +12,7 @@ public class ParsaludDbContext(DbContextOptions<ParsaludDbContext> options) : Id
     public DbSet<Post> Posts { get; set; } = null!;
     public DbSet<StyleSheet> StyleSheets { get; set; } = null!;
     public DbSet<PostCategory> PostCategories { get; set; } = null!;
+    public DbSet<Service> Services { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -73,6 +74,17 @@ public class ParsaludDbContext(DbContextOptions<ParsaludDbContext> options) : Id
                 .WithOne(x => x.StyleSheet)
                 .HasForeignKey(x => x.StyleSheetId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        builder.Entity<Service>(x =>
+        {
+            x.HasIndex(x => x.Code)
+                .IsUnique(unique: true);
+
+            x.HasMany(x => x.Faqs)
+                .WithOne(x => x.Service)
+                .HasForeignKey(x => x.ServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

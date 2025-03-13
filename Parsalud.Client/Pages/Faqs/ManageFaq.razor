@@ -4,6 +4,8 @@
 
 @inherits BaseAbm<FaqModel, IFaqService, ParsaludFaq, ManageFaqRequest, FaqSearchCriteria>
 
+@inject IServiceService ServiceService
+
 <PageTitle>@Action("Nueva", "Editar", "Ver") FAQ - Dashboard Parsalud</PageTitle>
 
 <RadzenCard>
@@ -11,9 +13,25 @@
     <RadzenTemplateForm TItem="FaqModel" Data="Model" Submit="Submit">
         <RadzenStack>
             <RadzenRow>
+                <RadzenColumn SizeMD="6">
+                    <RadzenFormField class="rz-w-100" Text="Servicio">
+                        <RadzenDropDown TValue="Guid?"
+                                        Data="Services"
+                                        ReadOnly="@ReadOnly"
+                                        ValueProperty=@nameof(ParsaludService.Id)
+                                        TextProperty=@nameof(ParsaludService.Name)
+                                        Name=@nameof(Model.ServiceId)
+                                        AllowClear="true"
+                                        AllowFiltering="true"
+                                        FilterAsYouType="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        FilterOperator="StringFilterOperator.Contains"
+                                        @bind-Value=@Model.ServiceId />
+                    </RadzenFormField>
+                </RadzenColumn>
                 <RadzenColumn SizeMD="12">
                     <RadzenFormField class="rz-w-100" Text="Pregunta">
-                        <RadzenTextBox Name=@nameof(Model.Question) ReadOnly="@ReadOnly" @bind-Value=@Model.Question />
+                        <RadzenTextBox Trim="true" Name=@nameof(Model.Question) ReadOnly="@ReadOnly" @bind-Value=@Model.Question />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.Question) Text="Pregunta es requerido" />
                 </RadzenColumn>

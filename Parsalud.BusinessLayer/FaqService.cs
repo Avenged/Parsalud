@@ -35,6 +35,7 @@ public class FaqService(
                 Question = request.Question,
                 Answer = request.Answer,
                 Hidden = request.Hidden,
+                ServiceId = request.ServiceId,
                 CreatedAt = DateTime.Now,
                 CreatedById = _userService.Id,
             };
@@ -46,6 +47,7 @@ public class FaqService(
                 Id = entity.Id,
                 Answer = entity.Answer,
                 Question = entity.Question,
+                ServiceId = entity.ServiceId,
                 Hidden = entity.Hidden,
                 CreatedAt = entity.CreatedAt
             });
@@ -68,6 +70,7 @@ public class FaqService(
             entity.Answer = request.Answer;
             entity.Question = request.Question;
             entity.Hidden = request.Hidden;
+            entity.ServiceId = request.ServiceId;
             entity.UpdatedAt = DateTime.Now;
             entity.UpatedById = _userService.Id;
 
@@ -78,6 +81,7 @@ public class FaqService(
                 Answer = entity.Answer,
                 Question = entity.Question,
                 Hidden = entity.Hidden,
+                ServiceId = entity.ServiceId,
                 CreatedAt = entity.CreatedAt
             });
         }
@@ -123,6 +127,7 @@ public class FaqService(
                     Answer = x.Answer,
                     Question = x.Question,
                     Hidden = x.Hidden,
+                    ServiceId = x.ServiceId,
                     CreatedAt = x.CreatedAt
                 }).FirstOrDefaultAsync(cancellationToken);
 
@@ -145,13 +150,22 @@ public class FaqService(
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-            var query = dbContext.Faqs.AsQueryable();
+            var query = dbContext.Faqs.Include(x => x.Service).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(criteria.Question))
                 query = query.Where(x => EF.Functions.Like(x.Question, $"%{criteria.Question}%"));
 
             if (!string.IsNullOrWhiteSpace(criteria.Answer))
                 query = query.Where(x => EF.Functions.Like(x.Answer, $"%{criteria.Answer}%"));
+
+            if (!string.IsNullOrWhiteSpace(criteria.ServiceCode))
+                query = query.Where(x => EF.Functions.Like(x.Service!.Code, criteria.ServiceCode));
+
+            if (criteria.OnlyGeneric)
+                query = query.Where(x => x.ServiceId == null);
+
+            if (criteria.ServiceId.HasValue)
+                query = query.Where(x => x.ServiceId == criteria.ServiceId);
 
             if (criteria.MaxCount.HasValue)
                 query = query.Take(criteria.MaxCount.Value);
@@ -166,6 +180,7 @@ public class FaqService(
                 Answer = x.Answer,
                 Question = x.Question,
                 Hidden = x.Hidden,
+                ServiceId = x.ServiceId,
                 CreatedAt = x.CreatedAt
             }).ToArrayAsync(cancellationToken);
 

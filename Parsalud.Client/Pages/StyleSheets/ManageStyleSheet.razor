@@ -14,7 +14,7 @@
             <RadzenRow>
                 <RadzenColumn SizeMD="12">
                     <RadzenFormField class="rz-w-100" Text="Nombre de archivo">
-                        <RadzenTextBox Name=@nameof(Model.FileName) ReadOnly=@ReadOnly @bind-Value=@Model.FileName />
+                        <RadzenTextBox Trim="true" Name=@nameof(Model.FileName) ReadOnly=@ReadOnly @bind-Value=@Model.FileName />
                     </RadzenFormField>
                     <RadzenRequiredValidator Component=@nameof(Model.FileName) Text="Nombre de archivo es requerido" />
                 </RadzenColumn>

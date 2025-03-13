@@ -8,4 +8,18 @@ public partial class ManageFaqs : ManagerBase<IFaqService, ParsaludFaq, ManageFa
     public ManageFaqs() : base("Dashboard/Faq/Create", "Nuevo FAQ")
     {    
     }
+
+    public ParsaludService[] Services { get; set; } = [];
+
+    protected async override Task OnInitializedAsync()
+    {
+        var response = await ServiceService.GetByCriteriaAsync(new ServiceSearchCriteria());
+
+        if (response.IsSuccessWithData)
+        {
+            Services = response.Data;
+        }
+
+        await base.OnInitializedAsync();
+    }
 }

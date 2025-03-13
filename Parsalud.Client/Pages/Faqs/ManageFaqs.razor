@@ -1,5 +1,6 @@
 ﻿@page "/Dashboard/Faqs"
 @inherits ManagerBase<IFaqService, ParsaludFaq, ManageFaqRequest, FaqSearchCriteria>
+@inject IServiceService ServiceService
 
 <PageTitle>FAQs - Dashboard Parsalud</PageTitle>
 
@@ -10,6 +11,20 @@
         <RadzenTemplateForm TItem="ManageFaqs" Data="this" Submit="Submit">
             <RadzenStack>
                 <RadzenRow>
+                    <RadzenColumn SizeMD="6">
+                        <RadzenFormField class="rz-w-100" Text="Servicio">
+                            <RadzenDropDown TValue="Guid?"
+                                            Data="Services"
+                                            ValueProperty=@nameof(ParsaludService.Id)
+                                            TextProperty=@nameof(ParsaludService.Name)
+                                            AllowClear="true"
+                                            AllowFiltering="true"
+                                            FilterAsYouType="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            FilterOperator="StringFilterOperator.Contains"
+                                            @bind-Value=@Criteria.ServiceId />
+                        </RadzenFormField>
+                    </RadzenColumn>
                     <RadzenColumn SizeMD="12">
                         <RadzenFormField class="rz-w-100" Text="Pregunta">
                             <RadzenTextBox @bind-Value=@Criteria.Question />
