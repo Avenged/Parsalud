@@ -1,10 +1,11 @@
 ﻿using Humanizer;
-using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
-using MimeKit;
 using Parsalud.BusinessLayer.Abstractions;
+using System.Net;
+using System.Net.Mail;
+using System.Text;
 
 namespace Parsalud.Extensions;
 
@@ -18,14 +19,18 @@ public static class WebApplicationExtensions
             IOptions<EmailSettings> settings,
             ILogger<Program> Logger) =>
         {
-            var emailFrom = settings.Value.EmailFrom;
-            var emailTo = settings.Value.EmailTo;
-            var subject = settings.Value.Subject;
-            var username = settings.Value.Username;
-            var password = settings.Value.Password;
-            var host = settings.Value.Host;
-            var port = settings.Value.Port;
-            var template = settings.Value.Template;
+            EmailSettings emailSettings = settings.Value;
+            string fromEmail = emailSettings.Username;
+            string password = emailSettings.Password;
+            string emailFrom = emailSettings.EmailFrom;
+            string hostName = emailSettings.HostName;
+            string emailTo = emailSettings.EmailTo;
+            string subject = emailSettings.Subject;
+            string host = emailSettings.Host;
+            int port = emailSettings.Port;
+            string template = emailSettings.Template;
+            bool enableSsl = emailSettings.EnableSsl;
+            bool useDefaultCredentials = emailSettings.UseDefaultCredentials;
 
             string? givenName = form["given-name"].FirstOrDefault()?.Truncate(100);
             string? familyName = form["family-name"].FirstOrDefault()?.Truncate(100);
@@ -37,7 +42,7 @@ public static class WebApplicationExtensions
 
             if (strs.Any(x => string.IsNullOrWhiteSpace(x)))
             {
-                return Results.BadRequest("Formulario incorrecto");
+                return Results.BadRequest("Formulario incorrecto. Corrija los datos enviados");
             }
 
             template = template.Replace("{GivenName}", givenName);
@@ -48,30 +53,35 @@ public static class WebApplicationExtensions
 
             try
             {
-                MimeMessage email = new();
-                email.From.Add(new MailboxAddress("Parsalud Web App", emailFrom));
-                email.To.Add(new MailboxAddress("Asesor", emailTo));
-                email.Subject = subject;
-
-                email.Body = new TextPart("plain")
+                MailMessage message = new()
                 {
-                    Text = template
+                    From = new MailAddress(emailFrom, hostName, Encoding.UTF8),
+                    Subject = subject,
                 };
+                message.To.Add(new MailAddress(emailTo));
+                message.Body = template;
+                message.IsBodyHtml = true;
 
-                using SmtpClient smtp = new();
-
-                //Parametrizar
-                await smtp.ConnectAsync(host, port, settings.Value.SecureSocketOptionValue);
-                await smtp.AuthenticateAsync(username, password);
-                await smtp.SendAsync(email);
-                await smtp.DisconnectAsync(true);
+                SmtpClient smtpClient = new()
+                {
+                    Host = host,
+                    Port = port,
+                    UseDefaultCredentials = useDefaultCredentials,
+                    Credentials = new NetworkCredential(fromEmail, password),
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    EnableSsl = enableSsl,
+                };
+                await smtpClient.SendMailAsync(message);
 
                 return Results.LocalRedirect("~/dr/Contacto/Success");
             }
             catch (Exception ex)
             {
                 Logger.LogCritical(ex, "No se pudo enviar el mail de contacto");
-                return Results.Problem("Error al enviar el correo: " + ex.Message);
+                return Results.Problem(
+                    title: "InternalServerError",
+                    detail: "Presentamos problemas para procesar tu solicitud.", 
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         });
     }

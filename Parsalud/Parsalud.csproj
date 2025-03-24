@@ -10,9 +10,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="BlazorMonaco" Version="3.3.0" />
-		<PackageReference Include="MailKit" Version="4.10.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.2" />
-		<PackageReference Include="MimeKit" Version="4.10.0" />
 		<ProjectReference Include="..\Dependencies\VENative.Blazor.ServiceGenerator.Extensions\VENative.Blazor.ServiceGenerator.Extensions.csproj" />
 		<ProjectReference Include="..\Parsalud.BusinessLayer\Parsalud.BusinessLayer.csproj" />
 		<ProjectReference Include="..\Parsalud.Client\Parsalud.Client.csproj" />
